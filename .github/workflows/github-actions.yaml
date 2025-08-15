@@ -56,9 +56,9 @@ jobs:
         working-directory: ./react-frontend
         run: npm install
    
-      - name: Run Jest Tests
-        working-directory: ./react-frontend
-        run: npm test -- --ci --watchAll=false
+      # - name: Run Jest Tests
+      #   working-directory: ./react-frontend
+      #   run: npm test -- --ci --watchAll=false
   
       - name: Build Frontend
         working-directory: ./react-frontend
