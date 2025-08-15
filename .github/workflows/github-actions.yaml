@@ -134,12 +134,11 @@ jobs:
           sed -i "s|image: raji2306/react-app|image: raji2306/react-image:15|g" docker-compose.yaml
           sed -i "s|image: mysql-container|image: mysql:8.0|g" docker-compose.yaml
 
-
       - name: Run docker-compose
         run: |
             docker compose up -d
             docker compose ps
-  
+
             echo "Waiting for backend to be healthy..."
             for i in {1..20}; do
               if docker exec backend curl -s http://localhost:8080/actuator/health | grep -q "UP"; then
@@ -150,7 +149,7 @@ jobs:
                 sleep 5
               fi
             done
-  
+
             echo "Checking frontend..."
             for i in {1..20}; do
               if docker exec frontend curl -s http://localhost:3000 | grep -q "<!DOCTYPE html>"; then
@@ -161,6 +160,16 @@ jobs:
                 sleep 5
               fi
             done
-  
+
             echo "Checking MySQL..."
-            docker exec mysql-container mysqladmin ping -h "localhost" -p"${MYSQL_ROOT_PASSWORD}" --silent && echo "✅ MySQL is up!"
+            for i in {1..20}; do
+              if docker exec mysql-container mysqladmin ping -h "localhost" -uroot -p"${MYSQL_ROOT_PASSWORD}" | grep -q "mysqld is alive"; then
+                echo "✅ MySQL is up!"
+                break
+              else
+                echo "Waiting 5s..."
+                sleep 5
+              fi
+            done
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
