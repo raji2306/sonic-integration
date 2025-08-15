@@ -1,0 +1,53 @@
+name : Reusable Workflow for Docker 
+
+run-name : Docker Build and publish
+
+on :
+  workflow_call :
+   inputs :
+      image :
+        required : true
+        type : string 
+      # userid :
+      #   required : true
+      #   type : string
+      tags :
+        required : true
+        type : string
+      dockerfile :
+        required : true
+        type : string
+   secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD :
+        required: true 
+        
+jobs :
+
+  Building-and-Pushing-DockerImage :
+   
+    runs-on : ubuntu-latest
+    
+    steps :
+    
+      - name : Giving permission to our Repository
+        uses: actions/checkout@v2
+
+      - name : Downloading Artifacts from Maven
+        # if :  github.job == 'Building-spring-boot-image'
+        uses : actions/download-artifact@v3
+        with:
+          name: my-artifact
+
+      - name: docker-upload
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+         image: raji2306/${{ inputs.image }}
+         tags : ${{ inputs.tags }}
+         dockerfile : ${{ inputs.dockerfile }}
+         registry: docker.io
+         username: ${{ secrets.DOCKER_USERNAME }}
+         password: ${{ secrets.DOCKER_PASSWORD }}
+           
+        

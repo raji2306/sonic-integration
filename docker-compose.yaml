@@ -1,0 +1,75 @@
+version: '3.9'
+services:
+  backend: # raji2306/spring-boot:badass
+    image: final-call
+    container_name: backend
+    environment:
+      - spring.datasource.url=jdbc:mysql://mysql-container:3306/devops
+      - spring.datasource.username=root
+      - spring.datasource.password=raji123*
+    ports:
+      - "8080:8080"
+    networks:
+      - mine
+    volumes:
+      - vol:/app
+    restart: always
+    depends_on:
+      - mysql-container
+    deploy:
+        resources:
+            limits:
+              cpus: 0.50
+              memory: 512M
+            reservations:
+              cpus: 0.25
+              memory: 128M
+
+  mysql-container: # raji2306/database
+    image: mysql-container # Use a valid MySQL image
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    volumes:
+      - vol:/app
+    networks:
+      - mine
+    environment:
+      - MYSQL_ROOT_PASSWORD=raji123* # Set the MySQL root password
+    deploy:
+        resources:
+            limits:
+              cpus: 0.50
+              memory: 512M
+            reservations:
+              cpus: 0.25
+              memory: 128M
+
+  frontend: # raji2306/react-app
+    image: raji2306/react-app
+    container_name: frontend
+    environment:
+      - REACT_APP_SPRING_BOOT_URL=http://backend:8080
+    ports:
+      - "3080:3000"
+    networks:
+      - mine
+    volumes:
+      - vol:/app
+    restart: always
+    depends_on:
+      - backend
+    deploy:
+        resources:
+            limits:
+              cpus: 0.50
+              memory: 512M
+            reservations:
+              cpus: 0.25
+              memory: 128M
+
+networks:
+  mine:
+
+volumes:
+  vol:
