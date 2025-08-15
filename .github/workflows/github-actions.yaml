@@ -130,11 +130,10 @@ jobs:
           docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
           docker push raji2306/react-image:${{ github.run_number }}
 
-      - name: Update docker-compose with new images
-        run: |
-          sed -i "s|image: final-call|image: raji2306/spring-image:${{ github.run_number }}|g" docker-compose.yaml
-          sed -i "s|image: raji2306/react-app|image: raji2306/react-image:${{ github.run_number }}|g" docker-compose.yaml
-          sed -i "s|image: mysql-container|image: mysql:8.0|g" docker-compose.yml
+          sed -i "s|image: final-call|image: raji2306/spring-image:15|g" docker-compose.yaml
+          sed -i "s|image: raji2306/react-app|image: raji2306/react-image:15|g" docker-compose.yaml
+          sed -i "s|image: mysql-container|image: mysql:8.0|g" docker-compose.yaml
+
 
       - name: Run docker-compose
         run: |
