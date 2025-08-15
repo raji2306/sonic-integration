@@ -122,12 +122,12 @@ jobs:
 
       - name: Build & Push Backend Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ github.run_number }} ./spring-backend
+          docker build -t raji2306/${{ env.BACKEND_IMAGE }}:${{ github.run_number }} ./spring-backend
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ github.run_number }}
 
       - name: Build & Push Frontend Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ github.run_number }} ./react-frontend
+          docker build -t raji2306/${{ env.FRONTEND_IMAGE }}:${{ github.run_number }} ./react-frontend
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ github.run_number }}
 
 
