@@ -44,26 +44,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+  
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: npm
-
+          cache-dependency-path: ./react-frontend/package-lock.json  # 👈 Fix here
+  
       - name: Install Dependencies & Build
         working-directory: ./react-frontend
-        run: |
-          npm install
- 
+        run: npm install
+   
       - name: Run Jest Tests
         working-directory: ./react-frontend
         run: npm test -- --ci --watchAll=false
-
+  
       - name: Build Frontend
         working-directory: ./react-frontend
         run: npm run build
-
+  
       - name: Upload Frontend Artifact
         uses: actions/upload-artifact@v4
         with:
