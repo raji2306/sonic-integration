@@ -95,7 +95,7 @@ jobs:
       - name: Run Integration Tests
         working-directory: ./spring-backend
         run: mvn verify -Dspring.datasource.url=jdbc:mysql://127.0.0.1:3306/${{ env.MYSQL_DATABASE }}
-
+        
   dockerize:
     needs: [build-backend, build-frontend, integration-test]
     runs-on: ubuntu-latest
@@ -119,15 +119,24 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       - name: Build & Push Backend Image
         run: |
-          docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
-          docker push raji2306/spring-image:${{ github.run_number }}
-      
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/spring-image:${{ github.run_number }} ./spring-backend
+          docker push ${{ secrets.DOCKER_USERNAME }}/spring-image:${{ github.run_number }}
+
       - name: Build & Push Frontend Image
         run: |
-          docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
-          docker push raji2306/react-image:${{ github.run_number }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/react-image:${{ github.run_number }} ./react-frontend
+          docker push ${{ secrets.DOCKER_USERNAME }}/react-image:${{ github.run_number }}
 
+      - name: Update docker-compose with new images
+        run: |
+          sed -i "s|image: final-call|image: ${{ secrets.DOCKER_USERNAME }}/spring-image:${{ github.run_number }}|g" docker-compose.yaml
+          sed -i "s|image: raji2306/react-app|image: ${{ secrets.DOCKER_USERNAME }}/react-image:${{ github.run_number }}|g" docker-compose.yaml
+          sed -i "s|image: mysql-container|image: mysql:8.0|g" docker-compose.yml
 
+      - name: Run docker-compose
+        run: |
+          docker-compose up -d
+          docker-compose ps
