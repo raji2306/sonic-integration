@@ -93,6 +93,7 @@ jobs:
           path: .
 
       - name: Run Integration Tests
+        working-directory: ./spring-backend
         run: mvn verify -Dspring.datasource.url=jdbc:mysql://127.0.0.1:3306/${{ env.MYSQL_DATABASE }}
 
   dockerize:
