@@ -128,3 +128,5 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ github.run_number }} ./react-frontend
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ github.run_number }}
+
+
