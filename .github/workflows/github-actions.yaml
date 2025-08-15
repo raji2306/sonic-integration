@@ -139,3 +139,28 @@ jobs:
         run: |
             docker compose up -d
             docker compose ps
+
+            # Wait for backend to be ready
+            echo "Waiting for backend health..."
+            for i in {1..30}; do
+              if curl -s http://localhost:8080/actuator/health | grep -q "UP"; then
+                echo "✅ Backend is up!"
+                break
+              fi
+              echo "Waiting 5s..."
+              sleep 5
+            done
+        
+            # Test inter-container connectivity
+            echo "Testing connectivity from frontend to backend..."
+            docker exec frontend ping -c 3 backend
+        
+            echo "Testing connectivity from backend to MySQL..."
+            docker exec backend sh -c "nc -zv mysql-container 3306"
+        
+            # Test external access
+            echo "Checking backend endpoint..."
+            curl -f http://localhost:8080/actuator/health
+        
+            echo "Checking frontend endpoint..."
+            curl -f http://localhost:3080
