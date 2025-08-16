@@ -34,14 +34,14 @@ jobs:
 
       - name: Build Spring Boot app with AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops-db
+          SPRING_DATASOURCE_URL: jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
           SPRING_DATASOURCE_USERNAME: admin              
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }} 
         run: mvn -B clean package --file ./spring-backend/pom.xml
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops-db
+          SPRING_DATASOURCE_URL: jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: |
