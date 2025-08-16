@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: devops
+data:
+  SPRING_DATASOURCE_URL: "jdbc:mysql://<RDS_ENDPOINT>:3306/<RDS_DB>"
