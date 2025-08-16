@@ -56,11 +56,11 @@ jobs:
           echo "📋 Databases:"
           mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES;"
           echo "📋 Tables in devops:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops-db; SHOW TABLES;"
+          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SHOW TABLES;"
           echo "📋 Schema of user table:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops-db; DESCRIBE user;"
+          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; DESCRIBE user;"
           echo "📋 Rows in user table:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops-db; SELECT * FROM user;"
+          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SELECT * FROM user;"
 
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
