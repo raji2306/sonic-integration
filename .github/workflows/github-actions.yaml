@@ -51,11 +51,10 @@ jobs:
 
       - name: Validate Database Tables
         run: |
-          echo "📋 Listing tables in 'devops' database..."
-          mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "SHOW TABLES;" devops || {
-            echo "❌ Failed to list tables. Database or tables may not exist yet."
-            exit 1
-          }
+            mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "SHOW DATABASES;"
+            mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "USE devops; SHOW TABLES;"
+            mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "SELECT user, host FROM mysql.user;"
+
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
