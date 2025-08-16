@@ -81,6 +81,10 @@ jobs:
           mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "SHOW DATABASES;"
           echo "📋 Tables in devops:"
           mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "USE devops; SHOW TABLES;"
+          echo "📋 Schema of user table:"
+          mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "USE devops; DESCRIBE user;"
+          echo "📋 Rows in user table:"
+          mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "USE devops; SELECT * FROM user;"
 
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
