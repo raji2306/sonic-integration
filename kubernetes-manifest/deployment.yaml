@@ -90,13 +90,13 @@ spec:
       containers:
         - name: frontend
           image: raji2306/react-image:44
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           env:
             # Use backend LoadBalancer DNS instead of internal cluster DNS
             - name: REACT_APP_SPRING_BOOT_URL
-              value: "http://<BACKEND_LB_HOSTNAME>:8080"
+              value: "http://aa0675c22d1d8413ba8f53aa616aa4cf-1118178894.ap-south-1.elb.amazonaws.com:8080"
           readinessProbe:
             httpGet:
               path: /
