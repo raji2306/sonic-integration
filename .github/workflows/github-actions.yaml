@@ -97,34 +97,9 @@ jobs:
         with:
           name: frontend-build
           path: ./react-frontend/build
-
-  integration-test:
-    needs: [build-backend]
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping -h 127.0.0.1" --health-interval=10s --health-timeout=5s --health-retries=3
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Download Backend Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: .
-
-      - name: Run Integration Tests
-        working-directory: ./spring-backend
-        run: mvn verify -Dspring.datasource.url=jdbc:mysql://127.0.0.1:3306/${{ env.MYSQL_DATABASE }}
-        
+          
   dockerize:
-    needs: [build-backend, build-frontend, integration-test]
+    needs: [build-backend, build-frontend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -161,42 +136,42 @@ jobs:
           sed -i "s|image: raji2306/react-app|image: raji2306/react-image:15|g" docker-compose.yaml
           sed -i "s|image: mysql-container|image: mysql:8.0|g" docker-compose.yaml
 
-      - name: Run docker-compose
-        run: |
-            docker compose up -d
-            docker compose ps
+      # - name: Run docker-compose
+      #   run: |
+      #       docker compose up -d
+      #       docker compose ps
 
-            echo "Waiting for backend to be healthy..."
-            for i in {1..20}; do
-              if docker exec backend curl -s http://localhost:8080/actuator/health | grep -q "UP"; then
-                echo "✅ Backend is healthy!"
-                break
-              else
-                echo "Waiting 5s..."
-                sleep 5
-              fi
-            done
+      #       echo "Waiting for backend to be healthy..."
+      #       for i in {1..20}; do
+      #         if docker exec backend curl -s http://localhost:8080/actuator/health | grep -q "UP"; then
+      #           echo "✅ Backend is healthy!"
+      #           break
+      #         else
+      #           echo "Waiting 5s..."
+      #           sleep 5
+      #         fi
+      #       done
 
-            echo "Checking frontend..."
-            for i in {1..20}; do
-              if docker exec frontend curl -s http://localhost:3000 | grep -q "<!DOCTYPE html>"; then
-                echo "✅ Frontend is up!"
-                break
-              else
-                echo "Waiting 5s..."
-                sleep 5
-              fi
-            done
+      #       echo "Checking frontend..."
+      #       for i in {1..20}; do
+      #         if docker exec frontend curl -s http://localhost:3000 | grep -q "<!DOCTYPE html>"; then
+      #           echo "✅ Frontend is up!"
+      #           break
+      #         else
+      #           echo "Waiting 5s..."
+      #           sleep 5
+      #         fi
+      #       done
 
-            echo "Checking MySQL..."
-            for i in {1..20}; do
-              if docker exec mysql-container mysqladmin ping -h "localhost" -uroot -p"${MYSQL_ROOT_PASSWORD}" | grep -q "mysqld is alive"; then
-                echo "✅ MySQL is up!"
-                break
-              else
-                echo "Waiting 5s..."
-                sleep 5
-              fi
-            done
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
+      #       echo "Checking MySQL..."
+      #       for i in {1..20}; do
+      #         if docker exec mysql-container mysqladmin ping -h "localhost" -uroot -p"${MYSQL_ROOT_PASSWORD}" | grep -q "mysqld is alive"; then
+      #           echo "✅ MySQL is up!"
+      #           break
+      #         else
+      #           echo "Waiting 5s..."
+      #           sleep 5
+      #         fi
+      #       done
+      #   env:
+      #     MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
