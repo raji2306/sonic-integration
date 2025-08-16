@@ -81,38 +81,20 @@ jobs:
           MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=10
-  
+        options: --health-cmd="mysqladmin ping -h 127.0.0.1" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v3
-  
-      - name: Wait for MySQL to be ready
-        run: |
-          echo "⏳ Waiting for MySQL to be ready..."
-          for i in {1..30}; do
-            if mysqladmin ping -h "127.0.0.1" -uroot -p"${{ env.MYSQL_ROOT_PASSWORD }}" | grep -q "mysqld is alive"; then
-              echo "✅ MySQL is ready!"
-              break
-            else
-              echo "Waiting 5s..."
-              sleep 5
-            fi
-          done
-  
+      
       - name: Download Backend Artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: .
-  
+
       - name: Run Integration Tests
         working-directory: ./spring-backend
         run: mvn verify -Dspring.datasource.url=jdbc:mysql://127.0.0.1:3306/${{ env.MYSQL_DATABASE }}
-          
+        
   dockerize:
     needs: [build-backend, build-frontend, integration-test]
     runs-on: ubuntu-latest
