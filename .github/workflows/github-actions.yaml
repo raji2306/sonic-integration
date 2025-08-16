@@ -49,6 +49,14 @@ jobs:
             sleep 5
           done
 
+      - name: Validate Database Tables
+        run: |
+          echo "📋 Listing tables in 'devops' database..."
+          mysql -h 127.0.0.1 -P 3306 -uroot -praji123* -e "SHOW TABLES;" devops || {
+            echo "❌ Failed to list tables. Database or tables may not exist yet."
+            exit 1
+          }
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
