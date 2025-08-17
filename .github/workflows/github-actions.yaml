@@ -129,7 +129,7 @@ jobs:
 
       - name: Build & Push Frontend Image
         run: |
-          docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+          docker build --build-arg REACT_APP_SPRING_BOOT_URL="" -t raji2306/react-image:${GITHUB_RUN_NUMBER} ./react-frontend
           docker push raji2306/react-image:${{ github.run_number }}
 
           sed -i "s|image: final-call|image: raji2306/spring-image:15|g" docker-compose.yaml
