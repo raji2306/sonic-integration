@@ -34,14 +34,14 @@ jobs:
 
       - name: Build Spring Boot app with AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
           SPRING_DATASOURCE_USERNAME: admin              
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }} 
         run: mvn -B clean package --file ./spring-backend/pom.xml
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: |
@@ -54,13 +54,13 @@ jobs:
       - name: Validate AWS RDS Database
         run: |
           echo "📋 Databases:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES;"
+          mysql -h devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES;"
           echo "📋 Tables in devops:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SHOW TABLES;"
+          mysql -h devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com  -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SHOW TABLES;"
           echo "📋 Schema of user table:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; DESCRIBE user;"
+          mysql -h devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com  -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; DESCRIBE user;"
           echo "📋 Rows in user table:"
-          mysql -h devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SELECT * FROM user;"
+          mysql -h devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com  -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SELECT * FROM user;"
 
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
