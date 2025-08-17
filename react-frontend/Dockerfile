@@ -1,22 +1,21 @@
-# Build stage
-FROM node:18-alpine AS build
-WORKDIR /app
+FROM node:alpine AS development
 
-# Accept build arg for backend URL
-ARG REACT_APP_SPRING_BOOT_URL=""
-ENV REACT_APP_SPRING_BOOT_URL=$REACT_APP_SPRING_BOOT_URL
+# Declaring env
+ENV NODE_ENV development
 
-COPY package*.json ./
+# Setting up the work directory
+WORKDIR /react-app
+
+# Installing dependencies
+COPY ./package.json /react-app
+
 RUN npm install
+
+# Copying all the files in our project
 COPY . .
-RUN npm run build
 
-# Production stage
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
 
-# Optional: copy custom nginx config if needed
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 3000
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Starting our application
+CMD npm start
