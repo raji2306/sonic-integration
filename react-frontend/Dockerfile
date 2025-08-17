@@ -1,21 +1,37 @@
-FROM node:alpine AS development
+# -------------------------
+# Stage 1: Build React app
+# -------------------------
+FROM node:18-alpine AS build
 
-# Declaring env
-ENV NODE_ENV development
-
-# Setting up the work directory
+# Set working directory
 WORKDIR /react-app
 
-# Installing dependencies
-COPY ./package.json /react-app
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
-# Copying all the files in our project
+# Copy all project files
 COPY . .
 
+# Set the backend URL at build time via env variable
+ARG REACT_APP_SPRING_BOOT_URL
+ENV REACT_APP_SPRING_BOOT_URL=$REACT_APP_SPRING_BOOT_URL
 
-EXPOSE 3000
+# Build the React app
+RUN npm run build
 
-# Starting our application
-CMD npm start
+# -------------------------
+# Stage 2: Serve with Nginx
+# -------------------------
+FROM nginx:alpine
+
+# Copy the React build output to Nginx html folder
+COPY --from=build /react-app/build /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
