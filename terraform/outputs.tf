@@ -1,3 +1,3 @@
 output "rds_endpoint" {
-  value = aws_db_instance.devops.endpoint
+  value = aws_db_instance.test.endpoint
 }
