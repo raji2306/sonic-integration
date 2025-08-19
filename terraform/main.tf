@@ -59,7 +59,6 @@ resource "aws_db_instance" "test" {
   skip_final_snapshot     = true
   deletion_protection     = false
   multi_az                = false
-  availability_zone       = "us-east-1a"
   apply_immediately       = true
   backup_retention_period = 0
 }
