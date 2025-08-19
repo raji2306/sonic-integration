@@ -1,11 +1,13 @@
 provider "aws" {
-  region = "ap-south-1"
+  region = "us-east-1" # change if needed
 }
 
+# Get default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
+# Get default subnets
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -13,21 +15,17 @@ data "aws_subnets" "default" {
   }
 }
 
-resource "aws_db_subnet_group" "default_subnet" {
-  name       = "default-subnet-group"
-  subnet_ids = data.aws_subnets.default.ids
-}
-
-resource "aws_security_group" "allow_mysql" {
-  name        = "allow-mysql"
-  description = "Allow MySQL access"
+# Security group to allow public access
+resource "aws_security_group" "rds_sg" {
+  name        = "rds-public-sg"
+  description = "Allow public access to RDS"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] # Open to all (use carefully!)
   }
 
   egress {
@@ -38,19 +36,33 @@ resource "aws_security_group" "allow_mysql" {
   }
 }
 
-resource "aws_db_instance" "devops" {
-  identifier              = "devops"
+# Subnet group (use default subnets)
+resource "aws_db_subnet_group" "default" {
+  name       = "default-subnet-group"
+  subnet_ids = data.aws_subnets.default.ids
+}
+
+# RDS Instance
+resource "aws_db_instance" "test" {
+  identifier              = "test-rds-db"
   allocated_storage       = 20
+  max_allocated_storage   = 20
   storage_type            = "gp2"
   engine                  = "mysql"
   engine_version          = "8.0"
   instance_class          = "db.t3.micro"
-  name                    = var.db_name
+
   username                = var.db_username
   password                = var.db_password
+
+  db_subnet_group_name    = aws_db_subnet_group.default.name
+  vpc_security_group_ids  = [aws_security_group.rds_sg.id]
   publicly_accessible     = true
+
   skip_final_snapshot     = true
   deletion_protection     = false
-  db_subnet_group_name    = aws_db_subnet_group.default_subnet.name
-  vpc_security_group_ids  = [aws_security_group.allow_mysql.id]
+  multi_az                = false
+  availability_zone       = "us-east-1a"
+  apply_immediately       = true
+  backup_retention_period = 0
 }
