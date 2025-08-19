@@ -1,51 +1,30 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  backend:
+  spring-backend:
     image: raji2306/spring-image:44
-    container_name: backend
-    environment:
-      - spring.datasource.url=jdbc:mysql://devops-db.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
-      - spring.datasource.username=admin
-      - spring.datasource.password=admin123*   # load from env file or export before running
+    container_name: spring-backend
     ports:
       - "8080:8080"
+    environment:
+      - spring.datasource.url=jdbc:mysql://devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
+      - spring.datasource.username=admin
+      - spring.datasource.password=admin123*
     networks:
       - mine
-    volumes:
-      - vol:/app
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: 0.50
-          memory: 512M
-        reservations:
-          cpus: 0.25
-          memory: 128M
 
-  frontend:
-    image: raji2306/react-image:44
-    container_name: frontend
-    environment:
-      - REACT_APP_SPRING_BOOT_URL=http://43.205.125.211:8080
+  react-frontend:
+    build: ./react-frontend
+    container_name: react-frontend
     ports:
-      - "3080:3000"
+      - "80:80"
     networks:
       - mine
     volumes:
       - vol:/app
     restart: always
     depends_on:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: 0.50
-          memory: 512M
-        reservations:
-          cpus: 0.25
-          memory: 128M
+      - spring-backend
 
 networks:
   mine:
