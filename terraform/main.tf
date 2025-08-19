@@ -3,7 +3,7 @@ data "aws_vpc" "default" {
   default = true
 }
 
-# Get default subnets
+# Get default subnets in the default VPC
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -11,12 +11,13 @@ data "aws_subnets" "default" {
   }
 }
 
-# Security group to allow public access
-resource "aws_security_group" "rds_sg" {
-  name        = "rds-public-sg"
-  description = "Allow public access to RDS"
-  vpc_id      = data.aws_vpc.default.id
-
+# Lookup existing security group (if already created manually)
+data "aws_security_group" "rds_sg" {
+  filter {
+    name   = "group-name"
+    values = ["rds-public-sg"]
+  }
+  vpc_id = data.aws_vpc.default.id
   ingress {
     from_port   = 3306
     to_port     = 3306
@@ -32,13 +33,12 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
-# Subnet group (use default subnets)
-resource "aws_db_subnet_group" "default" {
-  name       = "default-subnet-group"
-  subnet_ids = data.aws_subnets.default.ids
+# Lookup existing DB subnet group (if already exists in AWS)
+data "aws_db_subnet_group" "default" {
+  name = "default-subnet-group"
 }
 
-# RDS Instance# RDS Instance
+# RDS Instance
 resource "aws_db_instance" "test" {
   identifier              = "devops"           # DB instance identifier
   db_name                 = "devops"           # Initial database name
@@ -52,8 +52,8 @@ resource "aws_db_instance" "test" {
   username                = var.db_username
   password                = var.db_password
 
-  db_subnet_group_name    = aws_db_subnet_group.default.name
-  vpc_security_group_ids  = [aws_security_group.rds_sg.id]
+  db_subnet_group_name    = data.aws_db_subnet_group.default.name
+  vpc_security_group_ids  = [data.aws_security_group.rds_sg.id]
   publicly_accessible     = true
 
   skip_final_snapshot     = true
