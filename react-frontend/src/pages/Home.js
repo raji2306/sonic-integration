@@ -12,7 +12,7 @@ export default function Home() {
 
     const loadUsers = async () => {
         try {
-            const result = await axios.get(`${process.env.REACT_APP_SPRING_BOOT_URL}/user-data`);
+            const result = await axios.get(`/api/user-data`);
             setUsers(result.data);
         } catch (error) {
             // Handle errors here
@@ -22,7 +22,7 @@ export default function Home() {
 
     const deleteUser = async (id) => {
         try {
-            await axios.delete(`${process.env.REACT_APP_SPRING_BOOT_URL}/user/${id}`);
+            await axios.delete(`/api/user/${id}`);
             loadUsers();
         } catch (error) {
             // Handle errors here

@@ -17,10 +17,10 @@ export default function ViewUser() {
 
     const loadUser = async () => {
         try {
-            const result = await axios.get(`${process.env.REACT_APP_SPRING_BOOT_URL}/user/${id}`);
+            // Use relative path for NGINX proxy
+            const result = await axios.get(`/api/user/${id}`);
             setUser(result.data);
         } catch (error) {
-            // Handle errors here
             console.error('Error loading user data:', error);
         }
     };
@@ -35,22 +35,17 @@ export default function ViewUser() {
                             Details of the user: {user.name}
                             <ul className='list-group list-group-flush'>
                                 <li className='list-group-item'>
-                                    <b>Name : </b>
-                                    {user.name}
+                                    <b>Name : </b>{user.name}
                                 </li>
                                 <li className='list-group-item'>
-                                    <b>Username : </b>
-                                    {user.username}
+                                    <b>Username : </b>{user.username}
                                 </li>
                                 <li className='list-group-item'>
-                                    <b>Email : </b>
-                                    {user.email}
+                                    <b>Email : </b>{user.email}
                                 </li>
                             </ul>
                         </div>
-                        <Link className="btn btn-primary my-2" to={"/"}>
-                            Back to Home
-                        </Link>
+                        <Link className="btn btn-primary my-2" to={"/"}>Back to Home</Link>
                     </div>
                 </div>
             </div>
