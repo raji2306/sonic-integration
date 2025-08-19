@@ -1,14 +1,10 @@
 variable "db_username" {
-  type      = string
-  sensitive = true
+  description = "RDS username"
+  type        = string
 }
 
 variable "db_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_name" {
-  type    = string
-  default = "devops"
+  description = "RDS password"
+  type        = string
+  sensitive   = true
 }
