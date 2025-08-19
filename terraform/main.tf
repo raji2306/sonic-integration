@@ -42,9 +42,10 @@ resource "aws_db_subnet_group" "default" {
   subnet_ids = data.aws_subnets.default.ids
 }
 
-# RDS Instance
+# RDS Instance# RDS Instance
 resource "aws_db_instance" "test" {
-  identifier              = "test-rds-db"
+  identifier              = "devops"           # DB instance identifier
+  db_name                 = "devops"           # Initial database name
   allocated_storage       = 20
   max_allocated_storage   = 20
   storage_type            = "gp2"
