@@ -19,8 +19,10 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+
     outputs:
       rds_endpoint: ${{ steps.output_rds.outputs.endpoint }}
+      
     defaults:
       run:
         working-directory: terraform
@@ -62,4 +64,5 @@ jobs:
       - name: Output RDS Endpoint
         id: output_rds
         run: |
-          echo "endpoint=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
+          RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
+          echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
