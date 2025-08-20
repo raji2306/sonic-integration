@@ -1,11 +1,17 @@
 name: Deploy RDS
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    outputs:
+      rds_endpoint:
+        description: "RDS endpoint"
+        value: ${{ jobs.terraform.outputs.rds_endpoint }}
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    outputs:
+      rds_endpoint: ${{ steps.output_rds.outputs.endpoint }}
     
     defaults:
       run:
@@ -37,4 +43,10 @@ jobs:
         run: terraform apply -auto-approve
 
       - name: Show Outputs
-        run: terraform output
+        run: terraform output      
+        
+      - name: Output RDS Endpoint
+        id: output_rds
+        run: |
+          echo "endpoint=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
+
