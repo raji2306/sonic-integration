@@ -2,6 +2,19 @@ name: Deploy RDS
 
 on:
   workflow_call:
+    inputs:
+      aws-access-key-id:
+        required: true
+        type: string
+      aws-secret-access-key:
+        required: true
+        type: string
+      rds-username:
+        required: true
+        type: string
+      rds-password:
+        required: true
+        type: string
     outputs:
       rds_endpoint:
         description: "RDS endpoint"
@@ -12,11 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rds_endpoint: ${{ steps.output_rds.outputs.endpoint }}
-    
     defaults:
       run:
         working-directory: terraform
-        
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -24,8 +36,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ inputs.aws-access-key-id }}
+          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
           aws-region: ap-south-1
 
       - name: Setup Terraform
@@ -38,15 +50,14 @@ jobs:
 
       - name: Terraform Apply
         env:
-          TF_VAR_db_username: ${{ secrets.RDS_USERNAME }}
-          TF_VAR_db_password: ${{ secrets.RDS_PASSWORD }}
+          TF_VAR_db_username: ${{ inputs.rds-username }}
+          TF_VAR_db_password: ${{ inputs.rds-password }}
         run: terraform apply -auto-approve
 
       - name: Show Outputs
-        run: terraform output      
-        
+        run: terraform output
+
       - name: Output RDS Endpoint
         id: output_rds
         run: |
           echo "endpoint=$(terraform output -raw rds_endpoint)" >> $GITHUB_OUTPUT
-
