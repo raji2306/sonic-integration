@@ -21,7 +21,7 @@ jobs:
   call-database-creation:
     name: Create RDS Database
     uses: ./.github/workflows/Database_creation.yaml
-    with:
+    secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       rds-username: ${{ secrets.RDS_USERNAME }}
