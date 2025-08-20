@@ -5,21 +5,15 @@ on:
     secrets:
       aws-access-key-id:
         required: true
-        type: string
       aws-secret-access-key:
         required: true
-        type: string
       rds-username:
         required: true
-        type: string
       rds-password:
         required: true
-        type: string
     outputs:
       rds_endpoint:
         description: "RDS endpoint"
-permissions: write-all
-
         value: ${{ jobs.terraform.outputs.rds_endpoint }}
 
 jobs:
@@ -38,8 +32,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-region: ap-south-1
 
       - name: Setup Terraform
@@ -52,8 +46,8 @@ jobs:
 
       - name: Terraform Apply
         env:
-          TF_VAR_db_username: ${{ inputs.rds-username }}
-          TF_VAR_db_password: ${{ inputs.rds-password }}
+          TF_VAR_db_username: ${{ secrets.rds-username }}
+          TF_VAR_db_password: ${{ secrets.rds-password }}
         run: terraform apply -auto-approve
 
       - name: Show Outputs
