@@ -146,3 +146,6 @@ jobs:
         run: |
           docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
           docker push raji2306/spring-image:${{ github.run_number }}
+
+          docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+          docker push raji2306/react-image:${{ github.run_number }}
