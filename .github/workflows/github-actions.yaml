@@ -10,7 +10,6 @@ on:
 permissions: write-all
 
 env:
-  MYSQL_IMAGE: mysql-boom
   BACKEND_IMAGE: spring-image
   FRONTEND_IMAGE: react-image
   MYSQL_ROOT_PASSWORD: raji123*
