@@ -2,8 +2,7 @@ name: Deploy RDS
 
 on:
   workflow_call:
-    inputs:
-    secrets:
+    inputs:      
       aws-access-key-id:
         required: true
         type: string
