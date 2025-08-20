@@ -13,12 +13,9 @@ env:
   MYSQL_IMAGE: mysql-boom
   BACKEND_IMAGE: spring-image
   FRONTEND_IMAGE: react-image
-  access-key:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-  secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   MYSQL_ROOT_PASSWORD: raji123*
   MYSQL_DATABASE: devops
-  MYSQL_USER: ${{ secrets.RDS_USERNAME }}
-  MYSQL_PASSWORD:  ${{ secrets.RDS_PASSWORD }}
+
 
 jobs:
   call-database-creation:
