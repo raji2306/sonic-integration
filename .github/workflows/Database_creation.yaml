@@ -18,6 +18,8 @@ on:
     outputs:
       rds_endpoint:
         description: "RDS endpoint"
+permissions: write-all
+
         value: ${{ jobs.terraform.outputs.rds_endpoint }}
 
 jobs:
