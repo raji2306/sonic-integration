@@ -13,20 +13,22 @@ env:
   MYSQL_IMAGE: mysql-boom
   BACKEND_IMAGE: spring-image
   FRONTEND_IMAGE: react-image
+  access-key:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+  secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   MYSQL_ROOT_PASSWORD: raji123*
   MYSQL_DATABASE: devops
-  MYSQL_USER: raji
-  MYSQL_PASSWORD: raji123*
+  MYSQL_USER: ${{ secrets.RDS_USERNAME }}
+  MYSQL_PASSWORD:  ${{ secrets.RDS_PASSWORD }}
 
 jobs:
   call-database-creation:
     name: Create RDS Database
     uses: ./.github/workflows/Database_creation.yaml
     with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      rds-username: ${{ secrets.RDS_USERNAME }}
-      rds-password: ${{ secrets.RDS_PASSWORD }}
+      aws-access-key-id: ${{ env.access-key }} 
+      aws-secret-access-key: ${{ env.secret-key }} 
+      rds-username: ${{ env.MYSQL_USER }} 
+      rds-password: ${{ env.MYSQL_PASSWORD }} 
 
   build-backend:
     needs: call-database-creation
