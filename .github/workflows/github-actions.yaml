@@ -146,12 +146,3 @@ jobs:
         run: |
           docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
           docker push raji2306/spring-image:${{ github.run_number }}
-
-      # - name: Build & Push Frontend Image
-      #   run: |
-      #     docker build --build-arg REACT_APP_SPRING_BOOT_URL=http://127.0.0.1:8080 -t raji2306/react-image:${{ github.run_number }} .
-      #     docker push raji2306/react-image:${{ github.run_number }}
-
-      #     sed -i "s|image: final-call|image: raji2306/spring-image:${{ github.run_number }}|g" docker-compose.yaml
-      #     sed -i "s|image: raji2306/react-app|image: raji2306/react-image:${{ github.run_number }}|g" docker-compose.yaml
-      #     sed -i "s|image: mysql-container|image: mysql:8.0|g" docker-compose.yaml
