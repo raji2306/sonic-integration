@@ -44,6 +44,12 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Destroy
+        env:
+          TF_VAR_db_username: ${{ secrets.rds-username }}
+          TF_VAR_db_password: ${{ secrets.rds-password }}
+        run: terraform destroy -auto-approve
+
       - name: Terraform Apply
         env:
           TF_VAR_db_username: ${{ secrets.rds-username }}
