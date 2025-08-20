@@ -12,17 +12,16 @@ data "aws_subnets" "default" {
 }
 
 # Lookup existing security group (if already created manually)
-data "aws_security_group" "rds_sg" {
-  filter {
-    name   = "group-name"
-    values = ["rds-public-sg"]
-  }
-  vpc_id = data.aws_vpc.default.id
+resource "aws_security_group" "rds_sg" {
+  name        = "rds-public-sg"
+  description = "Allow MySQL access"
+  vpc_id      = data.aws_vpc.default.id
+
   ingress {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Open to all (use carefully!)
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -32,6 +31,7 @@ data "aws_security_group" "rds_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
 
 # Lookup existing DB subnet group (if already exists in AWS)
 data "aws_db_subnet_group" "default" {
@@ -53,7 +53,7 @@ resource "aws_db_instance" "test" {
   password                = var.db_password
 
   db_subnet_group_name    = data.aws_db_subnet_group.default.name
-  vpc_security_group_ids  = [data.aws_security_group.rds_sg.id]
+  vpc_security_group_ids  = [aws_security_group.rds_sg.id]
   publicly_accessible     = true
 
   skip_final_snapshot     = true
