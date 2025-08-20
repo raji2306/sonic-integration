@@ -26,6 +26,13 @@ jobs:
       rds-username: ${{ secrets.RDS_USERNAME }}
       rds-password: ${{ secrets.RDS_PASSWORD }}
 
+  debug-rds-endpoint:
+    needs: call-database-creation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print RDS Endpoint
+        run: echo ${{ needs.call-database-creation.outputs.rds_endpoint }}
+        
   build-backend:
     needs: call-database-creation
     runs-on: ubuntu-latest
@@ -39,25 +46,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-
-      - name: Build Spring Boot app with AWS RDS
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
-          SPRING_DATASOURCE_USERNAME: admin
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-        run: mvn -B clean package --file ./spring-backend/pom.xml
-
-      - name: Run Spring Boot app to initialize schema on AWS RDS
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
-          SPRING_DATASOURCE_USERNAME: admin
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-        run: |
-          java -jar ./spring-backend/target/*.jar &
-          APP_PID=$!
-          echo "⏳ Waiting for Spring Boot to initialize schema on RDS..."
-          sleep 30
-          kill $APP_PID
 
       - name: Validate AWS RDS Database
         run: |
@@ -83,6 +71,25 @@ jobs:
 
           echo "📋 Rows in user table:"
           mysql -h ${{ needs.call-database-creation.outputs.rds_endpoint }} -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SELECT * FROM user;"
+
+      - name: Build Spring Boot app with AWS RDS
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
+          SPRING_DATASOURCE_USERNAME: admin
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+        run: mvn -B clean package --file ./spring-backend/pom.xml
+
+      - name: Run Spring Boot app to initialize schema on AWS RDS
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
+          SPRING_DATASOURCE_USERNAME: admin
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+        run: |
+          java -jar ./spring-backend/target/*.jar &
+          APP_PID=$!
+          echo "⏳ Waiting for Spring Boot to initialize schema on RDS..."
+          sleep 30
+          kill $APP_PID
 
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
