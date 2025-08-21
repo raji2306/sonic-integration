@@ -1,0 +1,104 @@
+name: EKS-Deploy-Test
+
+on:
+  workflow_run:
+    workflows: ["CI-CD-Pipeline"]   # <-- main.yaml name
+    types:
+      - completed
+
+jobs:
+  create-eks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Create EKS Cluster
+        run: |
+          eksctl create cluster \
+            --name devops-test \
+            --region ap-south-1 \
+            --nodes 2 \
+            --node-type t3.medium \
+            --with-oidc \
+            --managed
+
+      - name: Save kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ap-south-1 --name devops-test
+          cat ~/.kube/config > kubeconfig.yaml
+
+      - name: Upload kubeconfig as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubeconfig
+          path: kubeconfig.yaml
+
+  deploy-app:
+    needs: create-eks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download kubeconfig
+        uses: actions/download-artifact@v4
+        with:
+          name: kubeconfig
+          path: .
+
+      - name: Setup kubectl
+        run: |
+          mkdir -p ~/.kube
+          mv kubeconfig.yaml ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Replace RDS endpoint in backend ConfigMap
+        run: |
+          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ needs.create-eks.outputs.rds_endpoint }}:3306/devops|g" \
+          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+
+      # ---- Apply manifests step by step ----
+      - name: Apply Namespace
+        run: kubectl apply -f sonic-integration/kubernetesManifest/namespace.yaml
+
+      - name: Apply Backend
+        run: |
+          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-secret.yaml
+          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-deployment.yaml
+          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-service.yaml
+
+      - name: Apply Frontend
+        run: |
+          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-nginx-configmap.yaml
+          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-deployment.yaml
+          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-service.yaml
+          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-ingress.yaml
+
+      - name: Sleep for pods to stabilize
+        run: sleep 420   # 7 minutes
+
+      - name: Check pods
+        run: kubectl get pods -n devops
+
+  cleanup:
+    needs: deploy-app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Delete EKS cluster
+        run: eksctl delete cluster --region ap-south-1 --name devops-test
