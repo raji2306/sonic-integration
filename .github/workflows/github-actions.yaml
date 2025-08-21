@@ -50,7 +50,10 @@ jobs:
       - name: Validate AWS RDS Database
         run: |
             # Extract the RDS endpoint dynamically from the output of the previous step
-            RDS_HOST_CLEAN='${{ needs.call-database-creation.outputs.rds_endpoint }}'
+            RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
+            RDS_HOST_CLEAN="${RDS_HOST%%:*}"
+
+              
             RDS_PASSWORD='${{ secrets.RDS_PASSWORD }}'
       
             echo "RDS Host: $RDS_HOST_CLEAN"
