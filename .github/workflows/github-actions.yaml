@@ -120,6 +120,16 @@ jobs:
         with:
           name: frontend-build
           path: ./react-frontend/build
+      
+      - name: Save RDS endpoint
+        run: echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
+      
+      - name: Upload RDS endpoint
+        uses: actions/upload-artifact@v4
+        with:
+          name: rds-endpoint
+          path: rds-endpoint.txt
+
 
   dockerize:
     needs: [build-backend, build-frontend]
