@@ -52,12 +52,7 @@ jobs:
             # Extract the RDS endpoint dynamically from the output of the previous step
             RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
             RDS_HOST_CLEAN="${RDS_HOST%%:*}"
-
-              
             RDS_PASSWORD='${{ secrets.RDS_PASSWORD }}'
-      
-            echo "RDS Host: $RDS_HOST_CLEAN"
-            echo "RDS Password: $RDS_PASSWORD"
       
             # Check if the MySQL server is accessible
             mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"${{ secrets.RDS_USERNAME }}" -p"$RDS_PASSWORD" -e "SHOW DATABASES;"
@@ -68,7 +63,8 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-        run: mvn -B clean package --file ./spring-backend/pom.xml
+        run: |
+             mvn -B clean package --file ./spring-backend/pom.xml
              echo $SPRING_DATASOURCE_URL
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
