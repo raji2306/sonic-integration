@@ -2,7 +2,7 @@ name: EKS-Deploy-Test
 
 on:
   workflow_run:
-    workflows: ["CI-CD-Pipeline"]   # <-- main.yaml name
+    workflows: ["Springboot-React CI/CD"]   
     types:
       - completed
 
@@ -24,9 +24,10 @@ jobs:
         run: |
           eksctl create cluster \
             --name devops-test \
+            --version 1.33 \
             --region ap-south-1 \
             --nodes 2 \
-            --node-type t3.medium \
+            --node-type t2.medium \
             --with-oidc \
             --managed
 
