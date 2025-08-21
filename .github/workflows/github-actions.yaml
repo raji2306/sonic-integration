@@ -67,15 +67,6 @@ jobs:
               echo "✅ Database 'devops' already exists."
             fi
             
-            echo "📋 Tables in devops:"
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SHOW TABLES;"
-            
-            echo "📋 Schema of user table:"
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; DESCRIBE user;"
-            
-            echo "📋 Rows in user table:"
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "USE devops; SELECT * FROM user;"
-
       - name: Build Spring Boot app with AWS RDS
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
