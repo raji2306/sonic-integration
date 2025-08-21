@@ -52,16 +52,16 @@ jobs:
             # Extract the RDS endpoint and clean it to remove the port
 
             RDS_HOST_CLEAN=devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com
-            
+            RDS_PASSWORD=admin123*
             # Check if the MySQL server is accessible
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES;"
+            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ RDS_PASSWORD }} -e "SHOW DATABASES;"
               
             echo "🔍 Checking if 'devops' database exists..."
-            DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES LIKE 'devops';" | grep -w devops || echo "NOT_FOUND")
+            DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ RDS_PASSWORD }} -e "SHOW DATABASES LIKE 'devops';" | grep -w devops || echo "NOT_FOUND")
             
             if [ "$DB_EXISTS" == "NOT_FOUND" ]; then
               echo "❌ Database 'devops' not found. Creating it..."
-              mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "CREATE DATABASE devops;"
+              mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ RDS_PASSWORD }} -e "CREATE DATABASE devops;"
               echo "✅ Database 'devops' created successfully."
             else
               echo "✅ Database 'devops' already exists."
