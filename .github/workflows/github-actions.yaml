@@ -46,32 +46,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-
-      - name: Validate AWS RDS Database
-        run: |
-            # Extract the RDS endpoint and clean it to remove the port
-            # Set the RDS endpoint and password
-            RDS_HOST_CLEAN='devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com'
-            RDS_PASSWORD='admin123*'
-            
-            # Check if the MySQL server is accessible
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p"$RDS_PASSWORD" -e "SHOW DATABASES;"
-            
-            # Check if the 'devops' database exists
-            echo "🔍 Checking if 'devops' database exists..."
-            DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p"$RDS_PASSWORD" -e "SHOW DATABASES LIKE 'devops';" | grep -w devops || echo "NOT_FOUND")
-            
-            if [ "$DB_EXISTS" == "NOT_FOUND" ]; then
-              echo "❌ Database 'devops' not found. Creating it..."
-              mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p"$RDS_PASSWORD" -e "CREATE DATABASE devops;"
-              echo "✅ Database 'devops' created successfully."
-            else
-              echo "✅ Database 'devops' already exists."
-            fi
             
       - name: Build Spring Boot app with AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: mvn -B clean package --file ./spring-backend/pom.xml
