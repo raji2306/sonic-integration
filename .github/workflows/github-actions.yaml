@@ -46,17 +46,33 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+
+      - name: Validate AWS RDS Database
+        run: |
+            # Extract the RDS endpoint and clean it to remove the port
+            # Set the RDS endpoint and password
+            RDS_HOST_CLEAN='devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com'
+            RDS_PASSWORD='admin123*'
+
+            echo $RDS_HOST_CLEAN
+            echo $RDS_PASSWORD
+
+
+            # Check if the MySQL server is accessible
+            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p"$RDS_PASSWORD" -e "SHOW DATABASES;"
+
             
       - name: Build Spring Boot app with AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: mvn -B clean package --file ./spring-backend/pom.xml
+             echo $SPRING_DATASOURCE_URL
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: |
