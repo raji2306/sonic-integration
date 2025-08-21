@@ -61,9 +61,20 @@ jobs:
           mv kubeconfig.yaml ~/.kube/config
           chmod 600 ~/.kube/config
 
+      # 🔹 Download the RDS endpoint from previous workflow
+      - name: Download RDS endpoint
+        uses: actions/download-artifact@v4
+        with:
+          name: rds-endpoint
+          path: .
+
+      - name: Read RDS endpoint
+        id: rds
+        run: echo "rds_endpoint=$(cat rds-endpoint.txt)" >> $GITHUB_OUTPUT
+
       - name: Replace RDS endpoint in backend ConfigMap
         run: |
-          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ needs.create-eks.outputs.rds_endpoint }}:3306/devops|g" \
+          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ steps.rds.outputs.rds_endpoint }}:3306/devops|g" \
           sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
 
       # ---- Apply manifests step by step ----
