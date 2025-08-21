@@ -60,7 +60,7 @@ jobs:
 
       - name: Build Spring Boot app with AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: |
@@ -69,7 +69,7 @@ jobs:
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
           SPRING_DATASOURCE_USERNAME: admin
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: |
