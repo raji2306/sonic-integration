@@ -47,17 +47,27 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Validate AWS RDS Database
+      - name: Validate and Prepare AWS RDS Database
         run: |
-            # Extract the RDS endpoint dynamically from the output of the previous step
-            RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
-            RDS_HOST_CLEAN="${RDS_HOST%%:*}"
-            RDS_PASSWORD='${{ secrets.RDS_PASSWORD }}'
+          RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
+          RDS_HOST_CLEAN="${RDS_HOST%%:*}"
+          RDS_USERNAME="${{ secrets.RDS_USERNAME }}"
+          RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
       
-            # Check if the MySQL server is accessible
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"${{ secrets.RDS_USERNAME }}" -p"$RDS_PASSWORD" -e "SHOW DATABASES;"
+          echo "🔍 Checking if 'devops' database exists on $RDS_HOST_CLEAN..."
       
-
+          DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "SHOW DATABASES LIKE 'devops';" | grep devops || true)
+      
+          if [ -z "$DB_EXISTS" ]; then
+            echo "⚠️ 'devops' database not found. Creating it now..."
+            mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "CREATE DATABASE devops;"
+          else
+            echo "✅ 'devops' database already exists."
+          fi
+      
+          echo "📋 Tables in 'devops':"
+          mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "USE devops; SHOW TABLES;"
+          
       - name: Build Spring Boot app with AWS RDS
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
