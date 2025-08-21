@@ -9,6 +9,16 @@ terraform {
   }
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "sonic-integration-bucket"
+    key            = "terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "dynamo"
+    encrypt        = true
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
