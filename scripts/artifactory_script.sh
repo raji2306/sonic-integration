@@ -69,7 +69,7 @@ def delete_artifact():
 
 def list_artifacts():
 
-    url1 = "https://ubit-artifactory-sh.intel.com/artifactory/api/storage/one-windows-local/"
+    url1 = "/artifactory/api/storage/one-windows-local/"
     target_directory = input("Enter the folder path that you want to check :  ")
     responses = requests.get(url1 + target_directory, auth=auth)
 
