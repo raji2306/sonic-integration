@@ -17,24 +17,24 @@ env:
 
 
 jobs:
-  call-database-creation:
-    name: Create RDS Database
-    uses: ./.github/workflows/Database_creation.yaml
-    secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      rds-username: ${{ secrets.RDS_USERNAME }}
-      rds-password: ${{ secrets.RDS_PASSWORD }}
+  # call-database-creation:
+  #   name: Create RDS Database
+  #   uses: ./.github/workflows/Database_creation.yaml
+  #   secrets:
+  #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #     rds-username: ${{ secrets.RDS_USERNAME }}
+  #     rds-password: ${{ secrets.RDS_PASSWORD }}
 
   debug-rds-endpoint:
-    needs: call-database-creation
+    # needs: call-database-creation
     runs-on: ubuntu-latest
     steps:
       - name: Print RDS Endpoint
         run: echo ${{ needs.call-database-creation.outputs.rds_endpoint }}
         
   build-backend:
-    needs: call-database-creation
+    # needs: call-database-creation
     runs-on: ubuntu-latest
 
     steps:
@@ -50,12 +50,12 @@ jobs:
       - name: Validate AWS RDS Database
         run: |
             # Extract the RDS endpoint and clean it to remove the port
-            RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
-            RDS_HOST_CLEAN="${RDS_HOST%%:*}"
+
+            RDS_HOST_CLEAN=devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com
             
             # Check if the MySQL server is accessible
             mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES;"
-            
+              
             echo "🔍 Checking if 'devops' database exists..."
             DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p${{ secrets.RDS_PASSWORD }} -e "SHOW DATABASES LIKE 'devops';" | grep -w devops || echo "NOT_FOUND")
             
