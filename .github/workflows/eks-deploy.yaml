@@ -22,17 +22,15 @@ jobs:
           aws-region: ap-south-1
 
       - name: Setup and deploy with eksctl
-        uses: melvinsamuel070/eksctl-action@v1
-        with:
-          eksctl_url: 'https://github.com/eksctl-io/eksctl/releases/download/v0.194.0/eksctl_Linux_amd64.tar.gz'
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: 'ap-south-1'
+        run: |
+            curl -sSL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+              | tar xz && sudo mv eksctl /usr/local/bin/
+          
+            curl -sSLO "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/$(uname -s | tr '[:upper:]' '[:lower:]')/amd64/kubectl" \
+              && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
-      - uses: azure/setup-kubectl@v4
-        with:
-           version: latest # default is latest stable
-        id: install
+            eksctl version
+            kubectl version --client
 
       - name: Create EKS Cluster
         run: |
