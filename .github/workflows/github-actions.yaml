@@ -17,24 +17,24 @@ env:
 
 
 jobs:
-  # call-database-creation:
-  #   name: Create RDS Database
-  #   uses: ./.github/workflows/Database_creation.yaml
-  #   secrets:
-  #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #     rds-username: ${{ secrets.RDS_USERNAME }}
-  #     rds-password: ${{ secrets.RDS_PASSWORD }}
+  call-database-creation:
+    name: Create RDS Database
+    uses: ./.github/workflows/Database_creation.yaml
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      rds-username: ${{ secrets.RDS_USERNAME }}
+      rds-password: ${{ secrets.RDS_PASSWORD }}
 
   debug-rds-endpoint:
-    # needs: call-database-creation
+    needs: call-database-creation
     runs-on: ubuntu-latest
     steps:
       - name: Print RDS Endpoint
         run: echo ${{ needs.call-database-creation.outputs.rds_endpoint }}
         
   build-backend:
-    # needs: call-database-creation
+    needs: call-database-creation
     runs-on: ubuntu-latest
 
     steps:
@@ -49,19 +49,17 @@ jobs:
 
       - name: Validate AWS RDS Database
         run: |
-            # Extract the RDS endpoint and clean it to remove the port
-            # Set the RDS endpoint and password
-            RDS_HOST_CLEAN='devops.cfwus0g4m3bn.ap-south-1.rds.amazonaws.com'
-            RDS_PASSWORD='admin123*'
-
-            echo $RDS_HOST_CLEAN
-            echo $RDS_PASSWORD
-
-
+            # Extract the RDS endpoint dynamically from the output of the previous step
+            RDS_HOST_CLEAN='${{ needs.call-database-creation.outputs.rds_endpoint }}'
+            RDS_PASSWORD='${{ secrets.RDS_PASSWORD }}'
+      
+            echo "RDS Host: $RDS_HOST_CLEAN"
+            echo "RDS Password: $RDS_PASSWORD"
+      
             # Check if the MySQL server is accessible
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -uadmin -p"$RDS_PASSWORD" -e "SHOW DATABASES;"
+            mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"${{ secrets.RDS_USERNAME }}" -p"$RDS_PASSWORD" -e "SHOW DATABASES;"
+      
 
-            
       - name: Build Spring Boot app with AWS RDS
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}:3306/devops
