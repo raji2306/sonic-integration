@@ -26,15 +26,15 @@ jobs:
       rds-username: ${{ secrets.RDS_USERNAME }}
       rds-password: ${{ secrets.RDS_PASSWORD }}
     
-  debug-rds-endpoint:
-      needs: call-database-creation
-      runs-on: ubuntu-latest
-      outputs:
-        result: ${{ steps.set-output-step.outputs.rds_endpoint }}
-      steps:
-        - name: Set Output
-          id: set-output-step
-          run: echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
+  # debug-rds-endpoint:
+  #     needs: call-database-creation
+  #     runs-on: ubuntu-latest
+  #     outputs:
+  #       result: ${{ steps.set-output-step.outputs.rds_endpoint }}
+  #     steps:
+  #       - name: Set Output
+  #         id: set-output-step
+  #         run: echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
         
   # build-backend:
   #   needs: call-database-creation
@@ -125,7 +125,9 @@ jobs:
           path: ./react-frontend/build
   
       - name: Save RDS Endpoint as Environment Variable
-        run: echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
+        run: |
+              pwd
+              echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
             
       - name: Upload RDS endpoint
         uses: actions/upload-artifact@v4
