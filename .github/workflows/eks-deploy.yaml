@@ -171,6 +171,7 @@ jobs:
   cleanup:
     needs: deploy-app
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
