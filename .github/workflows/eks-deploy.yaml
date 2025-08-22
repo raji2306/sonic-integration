@@ -139,22 +139,22 @@ jobs:
           
       # ---- Apply manifests ----
       - name: Apply Namespace
-        run: kubectl apply -f sonic-integration/kubernetesManifest/namespace.yaml
-
+        run: kubectl apply -f kubernetesManifest/namespace.yaml
+      
       - name: Apply Backend
         run: |
-          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
-          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-secret.yaml
-          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-deployment.yaml
-          kubectl apply -f sonic-integration/kubernetesManifest/backend/backend-service.yaml
-
+          kubectl apply -f kubernetesManifest/backend/backend-configmap.yaml
+          kubectl apply -f kubernetesManifest/backend/backend-secret.yaml
+          kubectl apply -f kubernetesManifest/backend/backend-deployment.yaml
+          kubectl apply -f kubernetesManifest/backend/backend-service.yaml
+      
       - name: Apply Frontend
         run: |
-          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-nginx-configmap.yaml
-          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-deployment.yaml
-          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-service.yaml
-          kubectl apply -f sonic-integration/kubernetesManifest/frontend/frontend-ingress.yaml
-
+          kubectl apply -f kubernetesManifest/frontend/frontend-nginx-configmap.yaml
+          kubectl apply -f kubernetesManifest/frontend/frontend-deployment.yaml
+          kubectl apply -f kubernetesManifest/frontend/frontend-service.yaml
+          kubectl apply -f kubernetesManifest/frontend/frontend-ingress.yaml
+      
       - name: Check pods
         run: kubectl get pods -n devops
 
