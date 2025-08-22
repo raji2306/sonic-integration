@@ -19,19 +19,21 @@ jobs:
         with:
           name: rds-endpoint
           run-id: ${{ github.event.workflow_run.id }}
+          path: ./rds-artifact
   
       - name: Read RDS Endpoint
         run: |
-          echo "RDS_ENDPOINT=$(cat rds-endpoint.txt)" >> $GITHUB_ENV
+          echo "RDS_ENDPOINT=$(cat ./rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
           echo "RDS_ENDPOINT is $RDS_ENDPOINT"
       
       - name: Replace RDS Endpoint in Backend ConfigMap
         run: |
           echo "Replacing RDS Endpoint in Backend ConfigMap..."
-          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ steps.rds.outputs.rds_endpoint }}:3306/devops|g" \
-          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml  
-          
+          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}:3306/devops|g" \
+          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+      
           cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+                
 
 
 
