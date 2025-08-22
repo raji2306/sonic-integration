@@ -16,19 +16,15 @@ jobs:
 
       - name: Read RDS Endpoint from Environment
         id: rds
-        run: |
-          echo "Validating RDS Endpoint..."
-          echo "RDS_ENDPOINT=${{ env.RDS_ENDPOINT }}"
-          echo "rds_endpoint=${{ env.RDS_ENDPOINT }}" >> $GITHUB_OUTPUT
-          cat $GITHUB_OUTPUT
+        run: echo "RDS_ENDPOINT=${{ github.event.workflow_run.outputs.rds_endpoint }}"
       
-      - name: Replace RDS Endpoint in Backend ConfigMap
-        run: |
-          echo "Replacing RDS Endpoint in Backend ConfigMap..."
-          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ steps.rds.outputs.rds_endpoint }}:3306/devops|g" \
-          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml  
+      # - name: Replace RDS Endpoint in Backend ConfigMap
+      #   run: |
+      #     echo "Replacing RDS Endpoint in Backend ConfigMap..."
+      #     sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ steps.rds.outputs.rds_endpoint }}:3306/devops|g" \
+      #     sonic-integration/kubernetesManifest/backend/backend-configmap.yaml  
           
-          cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+      #     cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
 
 
 
