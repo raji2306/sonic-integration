@@ -125,19 +125,21 @@ jobs:
           name: frontend-build
           path: ./react-frontend/build
           
-      - name: Save RDS Endpoint to File
+      - name: Handle RDS Endpoint
+        id: export-rds
         run: |
-          pwd
-          echo "Saving RDS Endpoint to file..."
+          echo "Saving and exporting RDS endpoint..."
           echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
+          echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
           echo "Saved value: $(cat rds-endpoint.txt)"
-      
+        shell: bash
+        
       - name: Upload RDS Endpoint Artifact
         uses: actions/upload-artifact@v4
         with:
           name: rds-endpoint
-          path: ./rds-endpoint.txt
-      
+          path: rds-endpoint.txt
+    
       - name: Export RDS Endpoint for Next Workflow
         run: |
           echo "Exporting RDS Endpoint for next workflow..."
