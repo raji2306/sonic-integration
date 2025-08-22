@@ -13,35 +13,24 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        
-      - name: Print RDS Endpoint
-        run: |
-          echo "RDS Endpoint from Workflow A: ${{ github.event.workflow_run.outputs.rds_endpoint }}"
 
-      # Example: Use RDS endpoint in deployment
-      - name: Deploy to EKS
+      - name: Download RDS Endpoint Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rds-endpoint
+      
+      - name: Read RDS Endpoint
         run: |
-          echo "Deploying backend and frontend to EKS..."
-          echo "Using RDS endpoint: ${{ github.event.workflow_run.outputs.rds_endpoint }}"
-          # Add your kubectl or helm deployment commands here
-
-      # - name: Download RDS Endpoint Artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: rds-endpoint
+          echo "RDS_ENDPOINT=$(cat rds-endpoint.txt)" >> $GITHUB_ENV
+          echo "RDS_ENDPOINT is $RDS_ENDPOINT"
       
-      # - name: Read RDS Endpoint
-      #   run: |
-      #     echo "RDS_ENDPOINT=$(cat rds-endpoint.txt)" >> $GITHUB_ENV
-      #     echo "RDS_ENDPOINT is $RDS_ENDPOINT"
-      
-      # - name: Replace RDS Endpoint in Backend ConfigMap
-      #   run: |
-      #     echo "Replacing RDS Endpoint in Backend ConfigMap..."
-      #     sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ steps.rds.outputs.rds_endpoint }}:3306/devops|g" \
-      #     sonic-integration/kubernetesManifest/backend/backend-configmap.yaml  
+      - name: Replace RDS Endpoint in Backend ConfigMap
+        run: |
+          echo "Replacing RDS Endpoint in Backend ConfigMap..."
+          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${{ steps.rds.outputs.rds_endpoint }}:3306/devops|g" \
+          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml  
           
-      #     cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+          cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
 
 
 
