@@ -133,7 +133,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rds-endpoint
-          path: rds-endpoint.txt
+          path: ./rds-endpoint.txt
 
       - name: Export RDS Endpoint for Next Workflow
         run: echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
