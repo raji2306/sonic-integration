@@ -36,7 +36,8 @@ jobs:
               echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
               echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" 
 
-        
+
+
   # build-backend:
   #   needs: call-database-creation
   #   runs-on: ubuntu-latest
@@ -146,6 +147,23 @@ jobs:
           echo "Exporting RDS Endpoint for next workflow..."
           echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
           echo "Exported value: ${{ needs.call-database-creation.outputs.rds_endpoint }}"
+
+  upload-rds-artifact:
+      name: Upload RDS Endpoint Artifact
+      needs: [call-database-creation, build-frontend]
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download RDS Endpoint from previous job
+          uses: actions/download-artifact@v4
+          with:
+            name: rds-endpoint
+            path: ./rds-artifact
+  
+        - name: Re-upload RDS Endpoint for cross-workflow access
+          uses: actions/upload-artifact@v4
+          with:
+            name: rds-endpoint
+            path: ./rds-artifact/rds-endpoint.txt
       # dockerize:
   #   needs: [build-backend, build-frontend]
   #   runs-on: ubuntu-latest
@@ -177,3 +195,5 @@ jobs:
 
   #         docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
   #         docker push raji2306/react-image:${{ github.run_number }}
+
+  
