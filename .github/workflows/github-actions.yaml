@@ -120,7 +120,10 @@ jobs:
         with:
           name: frontend-build
           path: ./react-frontend/build
-      
+  
+      - name: Save RDS Endpoint as Environment Variable
+        run: echo "RDS_ENDPOINT=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_ENV
+        
       - name: Save RDS endpoint
         run: echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
       
