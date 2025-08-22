@@ -13,9 +13,18 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        
+      - name: Print RDS Endpoint
+        run: |
+          echo "RDS Endpoint from Workflow A: ${{ github.event.workflow_run.outputs.rds_endpoint }}"
 
-      - name: Access Output
-        run: echo "Output from Workflow A is ${{ github.event.workflow_run.outputs.result }}"
+      # Example: Use RDS endpoint in deployment
+      - name: Deploy to EKS
+        run: |
+          echo "Deploying backend and frontend to EKS..."
+          echo "Using RDS endpoint: ${{ github.event.workflow_run.outputs.rds_endpoint }}"
+          # Add your kubectl or helm deployment commands here
+
       # - name: Download RDS Endpoint Artifact
       #   uses: actions/download-artifact@v4
       #   with:
