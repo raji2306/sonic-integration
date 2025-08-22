@@ -33,13 +33,15 @@ jobs:
       
       - name: Replace RDS Endpoint in Backend ConfigMap
         run: |
+          pwd 
+          ls -lrt
           sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}/devops|g" \
-          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
-          cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+          kubernetesManifest/backend/backend-configmap.yaml
+          cat kubernetesManifest/backend/backend-configmap.yaml
       
       - name: Verify Replacement
         run: |
-          grep "${RDS_ENDPOINT}" sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+          grep "${RDS_ENDPOINT}" kubernetesManifest/backend/backend-configmap.yaml
           
   #     - name: Configure AWS Credentials
   #       uses: aws-actions/configure-aws-credentials@v4
