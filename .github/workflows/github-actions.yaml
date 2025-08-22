@@ -26,15 +26,15 @@ jobs:
       rds-username: ${{ secrets.RDS_USERNAME }}
       rds-password: ${{ secrets.RDS_PASSWORD }}
     
-  debug-rds-endpoint:
-      needs: call-database-creation
-      runs-on: ubuntu-latest
-      steps:
-      - name: Print RDS Endpoint
-        id: save-rds
-        run: |
-              echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
-              echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" 
+  # debug-rds-endpoint:
+  #     needs: call-database-creation
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #     - name: Print RDS Endpoint
+  #       id: save-rds
+  #       run: |
+  #             echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
+  #             echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" 
 
 
 
@@ -136,17 +136,12 @@ jobs:
           echo "Saved value: $(cat rds-endpoint.txt)"
         shell: bash
         
-      - name: Upload RDS Endpoint Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rds-endpoint
-          path: rds-endpoint.txt
+      # - name: Upload RDS Endpoint Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: rds-endpoint
+      #     path: rds-endpoint.txt
     
-      - name: Export RDS Endpoint for Next Workflow
-        run: |
-          echo "Exporting RDS Endpoint for next workflow..."
-          echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
-          echo "Exported value: ${{ needs.call-database-creation.outputs.rds_endpoint }}"
 
   upload-rds-artifact:
       name: Upload RDS Endpoint Artifact
@@ -164,6 +159,13 @@ jobs:
           with:
             name: rds-endpoint
             path: ./rds-artifact/rds-endpoint.txt
+            
+        - name: Export RDS Endpoint for Next Workflow
+          run: |
+            echo "Exporting RDS Endpoint for next workflow..."
+            echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
+            echo "Exported value: ${{ needs.call-database-creation.outputs.rds_endpoint }}"
+
       # dockerize:
   #   needs: [build-backend, build-frontend]
   #   runs-on: ubuntu-latest
