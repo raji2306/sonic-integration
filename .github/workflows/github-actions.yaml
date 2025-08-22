@@ -25,7 +25,7 @@ jobs:
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       rds-username: ${{ secrets.RDS_USERNAME }}
       rds-password: ${{ secrets.RDS_PASSWORD }}
-
+    
   debug-rds-endpoint:
       needs: call-database-creation
       runs-on: ubuntu-latest
