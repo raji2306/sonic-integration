@@ -25,8 +25,8 @@ jobs:
       
       - name: Read RDS Endpoint
         run: |
-          RDS_ENDPOINT=$(cat rds-endpoint.txt)
-          echo "RDS_ENDPOINT=$RDS_ENDPOINT
+          echo "RDS_ENDPOINT=$(cat rds-endpoint.txt)" >> $GITHUB_ENV
+          echo "RDS_ENDPOINT is $RDS_ENDPOINT"
       
       # - name: Replace RDS Endpoint in Backend ConfigMap
       #   run: |
