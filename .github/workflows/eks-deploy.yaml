@@ -14,26 +14,35 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Download RDS Endpoint Artifact
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        uses: actions/download-artifact@v4
+      - name: 'Download artifact from latest build'
+        uses: dawidd6/action-download-artifact@v6
         with:
-          name: rds-endpoint-final
-          run-id: ${{ github.event.workflow_run.id }}
-          path: ./rds-artifact
+          workflow: github-actions.yaml
+          name: rds-endpoint
+          path: rds-endpoint.txt
+          workflow_conclusion: success
+          branch: main
+          
+      # - name: Download RDS Endpoint Artifact
+      #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: rds-endpoint-final
+      #     run-id: ${{ github.event.workflow_run.id }}
+      #     path: ./rds-artifact
 
-      - name: Read RDS Endpoint
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        run: |
-          echo "RDS_ENDPOINT=$(cat ./rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
-          echo "RDS_ENDPOINT is $RDS_ENDPOINT"
+      # - name: Read RDS Endpoint
+      #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
+      #   run: |
+      #     echo "RDS_ENDPOINT=$(cat ./rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
+      #     echo "RDS_ENDPOINT is $RDS_ENDPOINT"
 
-      - name: Replace RDS Endpoint in Backend ConfigMap
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        run: |
-          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}:3306/devops|g" \
-          sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
-          cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+      # - name: Replace RDS Endpoint in Backend ConfigMap
+      #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
+      #   run: |
+      #     sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}:3306/devops|g" \
+      #     sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
+      #     cat sonic-integration/kubernetesManifest/backend/backend-configmap.yaml
 
 
   #     - name: Configure AWS Credentials
