@@ -22,7 +22,11 @@ jobs:
           path: rds-endpoint.txt
           workflow_conclusion: success
           branch: main
-          
+
+      - name: Read RDS Endpoint
+        run: |
+          cat rds-endpoint.txt/rds-endpoint.txt
+
       # - name: Download RDS Endpoint Artifact
       #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
       #   uses: actions/download-artifact@v4
