@@ -17,7 +17,7 @@ jobs:
       - name: Download RDS Endpoint Artifact
         uses: actions/download-artifact@v4
         with:
-          name: rds-endpoint
+          name: rds-endpoint-final
           run-id: ${{ github.event.workflow_run.id }}
           path: ./rds-artifact
 
