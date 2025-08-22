@@ -122,22 +122,16 @@ jobs:
           path: ./react-frontend/build
   
       - name: Save RDS Endpoint as Environment Variable
-        run: echo "RDS_ENDPOINT=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_ENV
-        
-      - name: Save RDS endpoint
-        run: | 
-            echo "RDS_ENDPOINT=$RDS_ENDPOINT"
-            pwd
-
-      - name: Export RDS Endpoint for Next Workflow
-        run: echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
-      
+        run: echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
+            
       - name: Upload RDS endpoint
         uses: actions/upload-artifact@v4
         with:
           name: rds-endpoint
           path: rds-endpoint.txt
 
+      - name: Export RDS Endpoint for Next Workflow
+        run: echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
 
   # dockerize:
   #   needs: [build-backend, build-frontend]
