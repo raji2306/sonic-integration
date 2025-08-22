@@ -101,6 +101,7 @@ jobs:
 
   build-frontend:
     runs-on: ubuntu-latest
+    needs: call-database-creation
     steps:
       - uses: actions/checkout@v3
 
