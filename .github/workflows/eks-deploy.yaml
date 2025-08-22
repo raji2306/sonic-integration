@@ -14,10 +14,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Read RDS Endpoint from Environment
-        id: rds
-        run: echo "RDS_ENDPOINT is {{ github.event.workflow_run.conclusion == 'success' &&  github.event.workflow_run.outputs.rds_endpoint }}"
+      - name: Read RDS Endpoint from Previous Workflow
+        run: echo "RDS_ENDPOINT is ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.outputs.rds_endpoint }}"
 
+        
       # - name: Download RDS Endpoint Artifact
       #   uses: actions/download-artifact@v4
       #   with:
