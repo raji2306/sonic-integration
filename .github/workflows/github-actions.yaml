@@ -141,23 +141,6 @@ jobs:
         with:
           name: rds-endpoint
           path: rds-endpoint.txt
-          
-  upload-rds-artifact:
-    name: Upload RDS Endpoint for Cross-Workflow Access
-    needs: [build-frontend, call-database-creation]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download RDS Endpoint from previous job
-        uses: actions/download-artifact@v4
-        with:
-          name: rds-endpoint
-          path: ./rds-artifact
-  
-      - name: Re-upload RDS Endpoint
-        uses: actions/upload-artifact@v4
-        with:
-          name: rds-endpoint-final
-          path: ./rds-artifact/rds-endpoint.txt
 
       # dockerize:
   #   needs: [build-backend, build-frontend]
