@@ -30,7 +30,7 @@ jobs:
     needs: call-database-creation
     runs-on: ubuntu-latest
     outputs:
-      result: ${{steps.save-rds.outputs.rds_endpoint}}
+      result: ${{steps.set-output-step.outputs.rds_endpoint}}
     steps:
       - name: Set Output
         id: set-output-step
