@@ -18,7 +18,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: rds-endpoint
-      
+          run-id: ${{ github.event.workflow_run.id }}
+  
       - name: Read RDS Endpoint
         run: |
           echo "RDS_ENDPOINT=$(cat rds-endpoint.txt)" >> $GITHUB_ENV
