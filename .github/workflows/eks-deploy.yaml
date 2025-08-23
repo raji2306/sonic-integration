@@ -148,6 +148,17 @@ jobs:
         run: |
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/aws/deploy.yaml
           kubectl get pods -n ingress-nginx
+
+      - name: Wait for Ingress Controller to be ready
+        run: |
+          echo "⏳ Waiting for ingress-nginx-controller pods..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=Ready pods \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=600s
+          kubectl get pods -n ingress-nginx
+          echo "Sleeping 20s for webhook to be ready..."
+          sleep 20
           
       # ---- Apply manifests ----
       - name: Apply Namespace
