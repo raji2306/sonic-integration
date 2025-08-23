@@ -160,47 +160,49 @@ jobs:
   
       - name: Build Frontend Image
         run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
-  
-      - name: Snyk Image Scan - Backend
+        
+      # Snyk Image Scan - Backend
+      - name: Snyk Image Scan & Upload - Backend
         uses: snyk/actions/docker@master
-        continue-on-error: true 
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: raji2306/spring-image:${{ github.run_number }}
-          args: --severity-threshold=high --json-file-output=snyk-backend.json
-
+          args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
+      
+      # Upload Backend JSON report to GitHub Actions
       - name: Upload Backend Snyk Report
         uses: actions/upload-artifact@v4
         with:
           name: snyk-backend-report
           path: snyk-backend.json
-
+      
+      # Monitor Backend project to Snyk Dashboard
+      - name: Monitor Backend Project in Snyk Dashboard
+        run: snyk monitor --docker raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
+      
       # Snyk Image Scan - Frontend
-      - name: Snyk Image Scan - Frontend
+      - name: Snyk Image Scan & Upload - Frontend
         uses: snyk/actions/docker@master
-        continue-on-error: true 
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: raji2306/react-image:${{ github.run_number }}
-          args: --severity-threshold=high --json-file-output=snyk-frontend.json
-
+          args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
+      
+      # Upload Frontend JSON report to GitHub Actions
       - name: Upload Frontend Snyk Report
         uses: actions/upload-artifact@v4
         with:
           name: snyk-frontend-report
           path: snyk-frontend.json
+      
+      # Monitor Frontend project to Snyk Dashboard
+      - name: Monitor Frontend Project in Snyk Dashboard
+        run: snyk monitor --docker raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
 
-  
-      #Upload Snyk Reports as Artifacts
-      - name: Upload Snyk Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-reports
-          path: |
-            snyk-backend-image.json
-            snyk-frontend-image.json
   
       #Push Images Only If Scans Pass
       - name: Push Backend Image
