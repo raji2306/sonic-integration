@@ -25,80 +25,68 @@ jobs:
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       rds-username: ${{ secrets.RDS_USERNAME }}
       rds-password: ${{ secrets.RDS_PASSWORD }}
-    
-  # debug-rds-endpoint:
-  #     needs: call-database-creation
-  #     runs-on: ubuntu-latest
-  #     steps:
-  #     - name: Print RDS Endpoint
-  #       id: save-rds
-  #       run: |
-  #             echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
-  #             echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" 
 
+  build-backend:
+    needs: call-database-creation
+    runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v3
 
-  # build-backend:
-  #   needs: call-database-creation
-  #   runs-on: ubuntu-latest
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Set up JDK 17
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         java-version: '17'
-  #         distribution: 'temurin'
-  #         cache: maven
-
-  #     - name: Validate and Prepare AWS RDS Database
-  #       run: |
-  #         RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
-  #         RDS_HOST_CLEAN="${RDS_HOST%%:*}"
-  #         RDS_USERNAME="${{ secrets.RDS_USERNAME }}"
-  #         RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
+      - name: Validate and Prepare AWS RDS Database
+        run: |
+          RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
+          RDS_HOST_CLEAN="${RDS_HOST%%:*}"
+          RDS_USERNAME="${{ secrets.RDS_USERNAME }}"
+          RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
       
-  #         echo "🔍 Checking if 'devops' database exists on $RDS_HOST_CLEAN..."
+          echo "🔍 Checking if 'devops' database exists on $RDS_HOST_CLEAN..."
       
-  #         DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "SHOW DATABASES LIKE 'devops';" | grep devops || true)
+          DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "SHOW DATABASES LIKE 'devops';" | grep devops || true)
       
-  #         if [ -z "$DB_EXISTS" ]; then
-  #           echo "⚠️ 'devops' database not found. Creating it now..."
-  #           mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "CREATE DATABASE devops;"
-  #         else
-  #           echo "✅ 'devops' database already exists."
-  #         fi
+          if [ -z "$DB_EXISTS" ]; then
+            echo "⚠️ 'devops' database not found. Creating it now..."
+            mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "CREATE DATABASE devops;"
+          else
+            echo "✅ 'devops' database already exists."
+          fi
       
-  #         echo "📋 Tables in 'devops':"
-  #         mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "USE devops; SHOW TABLES;"
+          echo "📋 Tables in 'devops':"
+          mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "USE devops; SHOW TABLES;"
           
-  #     - name: Build Spring Boot app with AWS RDS
-  #       env:
-  #         SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
-  #         SPRING_DATASOURCE_USERNAME: admin
-  #         SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-  #       run: |
-  #            mvn -B clean package --file ./spring-backend/pom.xml
-  #            echo $SPRING_DATASOURCE_URL
+      - name: Build Spring Boot app with AWS RDS
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
+          SPRING_DATASOURCE_USERNAME: admin
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+        run: |
+             mvn -B clean package --file ./spring-backend/pom.xml
+             echo $SPRING_DATASOURCE_URL
 
-  #     - name: Run Spring Boot app to initialize schema on AWS RDS
-  #       env:
-  #         SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
-  #         SPRING_DATASOURCE_USERNAME: admin
-  #         SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-  #       run: |
-  #         java -jar ./spring-backend/target/*.jar &
-  #         APP_PID=$!
-  #         echo "⏳ Waiting for Spring Boot to initialize schema on RDS..."
-  #         sleep 30
-  #         kill $APP_PID
+      - name: Run Spring Boot app to initialize schema on AWS RDS
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
+          SPRING_DATASOURCE_USERNAME: admin
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+        run: |
+          java -jar ./spring-backend/target/*.jar &
+          APP_PID=$!
+          echo "⏳ Waiting for Spring Boot to initialize schema on RDS..."
+          sleep 30
+          kill $APP_PID
 
-  #     - name: Upload Backend Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: backend-jar
-  #         path: ./spring-backend/target/*.jar
+      - name: Upload Backend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: ./spring-backend/target/*.jar
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -142,36 +130,36 @@ jobs:
           name: rds-endpoint
           path: rds-endpoint.txt
 
-      # dockerize:
-  #   needs: [build-backend, build-frontend]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+      dockerize:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Download Backend Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: backend-jar
-  #         path: ./spring-backend
+      - name: Download Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./spring-backend
 
-  #     - name: Download Frontend Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: frontend-build
-  #         path: ./react-frontend/build
+      - name: Download Frontend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./react-frontend/build
 
-  #     - name: Log in to DockerHub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  #     - name: Build & Push Backend Image
-  #       run: |
-  #         docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
-  #         docker push raji2306/spring-image:${{ github.run_number }}
+      - name: Build & Push Backend Image
+        run: |
+          docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
+          docker push raji2306/spring-image:${{ github.run_number }}
 
-  #         docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
-  #         docker push raji2306/react-image:${{ github.run_number }}
+          docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+          docker push raji2306/react-image:${{ github.run_number }}
 
   
