@@ -161,6 +161,45 @@ jobs:
           kubectl apply -f kubernetesManifest/frontend/frontend-deployment.yaml
           kubectl apply -f kubernetesManifest/frontend/frontend-service.yaml
           kubectl apply -f kubernetesManifest/frontend/frontend-ingress.yaml
+
+      # Wait until all pods are running
+      - name: Wait for Pods
+        run: |
+          echo "⏳ Waiting for pods to be ready..."
+          kubectl wait --for=condition=Available deployment --all -n devops --timeout=600s
+          kubectl get pods -n devops -o wide
+
+      # Show events if something is wrong
+      - name: Show Events
+        if: failure()
+        run: kubectl get events -n devops --sort-by=.metadata.creationTimestamp
+
+      # Tail logs from failing pods (last 10 lines)
+      - name: Get Pod Logs (10 lines)
+        run: |
+          for pod in $(kubectl get pods -n devops -o name); do
+            echo "🔹 Logs for $pod"
+            kubectl logs --tail=10 -n devops $pod || true
+          done
+
+      # Describe pods for debugging
+      - name: Describe Pods
+        run: kubectl describe pods -n devops
+
+      # Wait until ingress shows LoadBalancer hostname
+      - name: Wait for Ingress
+        run: |
+          echo "⏳ Waiting for ingress to get a LoadBalancer hostname..."
+          for i in {1..30}; do
+            HOSTNAME=$(kubectl get ingress -n devops -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+            if [ -n "$HOSTNAME" ]; then
+              echo "✅ Ingress Hostname: $HOSTNAME"
+              echo "INGRESS_HOSTNAME=$HOSTNAME" >> $GITHUB_ENV
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 20
+          done
       
       - name: Check pods
         run: kubectl get pods -n devops
