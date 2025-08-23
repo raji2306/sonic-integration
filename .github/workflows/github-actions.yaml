@@ -70,15 +70,19 @@ jobs:
 
       - name: SonarQube Scan for Backend
         uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=SpringbootBackend
             -Dsonar.projectName=SpringbootBackend
             -Dsonar.sources=./spring-backend/src
             -Dsonar.java.binaries=./spring-backend/target/classes
-            -Dsonar.host.url=$SONAR_HOST_URL
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+            -Dsonar.login=${{ env.SONAR_TOKEN }}
             -Dsonar.qualitygate.wait=true
+      
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
         env:
