@@ -78,7 +78,7 @@ jobs:
             -Dsonar.projectName=SpringbootBackend
             -Dsonar.sources=./spring-backend/src
             -Dsonar.java.binaries=./spring-backend/target/classes
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.host.url=${{ vars.SONAR_HOST_URL }}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             -Dsonar.qualitygate.wait=true
 
