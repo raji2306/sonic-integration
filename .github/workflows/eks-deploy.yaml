@@ -162,6 +162,11 @@ jobs:
           kubectl apply -f kubernetesManifest/frontend/frontend-service.yaml
           kubectl apply -f kubernetesManifest/frontend/frontend-ingress.yaml
 
+      - name: Install NGINX Ingress Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/aws/deploy.yaml
+          kubectl get pods -n ingress-nginx
+
       # Wait until all pods are running
       - name: Wait for Pods
         run: |
