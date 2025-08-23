@@ -1,0 +1,48 @@
+name: Run SonarQube on Self-Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  start-sonarqube:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker 
+        run: |
+          if ! command -v docker &> /dev/null
+          then
+            sudo apt update
+            sudo apt install -y docker.io
+            sudo systemctl enable docker
+            sudo systemctl start docker
+          fi
+
+      - name: Configure System for Elasticsearch
+        run: |
+          sudo sysctl -w vm.max_map_count=524288
+          sudo sysctl -w fs.file-max=131072
+          ulimit -n 131072
+          ulimit -u 8192
+
+      - name: Pull SonarQube Docker Image
+        run: docker pull sonarqube:community
+
+      - name: Run SonarQube Container
+        run: |
+          docker stop sonarqube || true
+          docker rm sonarqube || true
+          docker run -d --name sonarqube \
+            -p 9000:9000 \
+            -v sonarqube_data:/opt/sonarqube/data \
+            -v sonarqube_logs:/opt/sonarqube/logs \
+            -v sonarqube_extensions:/opt/sonarqube/extensions \
+            sonarqube:community
+
+      - name: Display Access URL
+        run: |
+          echo "SonarQube is running at:"
+          echo "http://$(hostname -I | awk '{print $1}'):9000"
