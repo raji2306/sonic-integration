@@ -10,10 +10,8 @@ on:
 permissions: write-all
 
 env:
-  BACKEND_IMAGE: spring-image
-  FRONTEND_IMAGE: react-image
-  MYSQL_ROOT_PASSWORD: raji123*
-  MYSQL_DATABASE: devops
+  SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}   # your repo variable
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 
 jobs:
@@ -78,8 +76,8 @@ jobs:
             -Dsonar.projectName=SpringbootBackend
             -Dsonar.sources=./spring-backend/src
             -Dsonar.java.binaries=./spring-backend/target/classes
-            -Dsonar.host.url=${{ vars.SONAR_HOST_URL }}
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.host.url=$SONAR_HOST_URL
+            -Dsonar.login=$SONAR_TOKEN
             -Dsonar.qualitygate.wait=true
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
