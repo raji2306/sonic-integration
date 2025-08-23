@@ -160,6 +160,9 @@ jobs:
   
       - name: Build Frontend Image
         run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+      
+      - name: Install Snyk CLI
+        run: npm install -g snyk
         
       # Snyk Image Scan - Backend
       - name: Snyk Image Scan & Upload - Backend
