@@ -130,7 +130,7 @@ jobs:
           name: rds-endpoint
           path: rds-endpoint.txt
 
-      dockerize:
+  dockerize:
     needs: [build-backend, build-frontend]
     runs-on: ubuntu-latest
     steps:
@@ -154,12 +154,46 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push Backend Image
-        run: |
-          docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
-          docker push raji2306/spring-image:${{ github.run_number }}
-
-          docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
-          docker push raji2306/react-image:${{ github.run_number }}
-
+      #Build Docker Images
+      - name: Build Backend Image
+        run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
   
+      - name: Build Frontend Image
+        run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+  
+      #Snyk Image Scan - Backend
+      - name: Snyk Image Scan - Backend
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: raji2306/spring-image:${{ github.run_number }}
+          args: --severity-threshold=high --json > snyk-backend-image.json
+  
+      #Snyk Image Scan - Frontend
+      - name: Snyk Image Scan - Frontend
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: raji2306/react-image:${{ github.run_number }}
+          args: --severity-threshold=high --json > snyk-frontend-image.json
+  
+      #Upload Snyk Reports as Artifacts
+      - name: Upload Snyk Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-reports
+          path: |
+            snyk-backend-image.json
+            snyk-frontend-image.json
+  
+      #Push Images Only If Scans Pass
+      - name: Push Backend Image
+        if: success()
+        run: docker push raji2306/spring-image:${{ github.run_number }}
+  
+      - name: Push Frontend Image
+        if: success()
+        run: docker push raji2306/react-image:${{ github.run_number }}
+
