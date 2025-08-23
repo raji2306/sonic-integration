@@ -178,7 +178,9 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: raji2306/react-image:${{ github.run_number }}
-          args: --severity-threshold=high --json > snyk-frontend-image.json
+          command: test
+          severity-threshold: high
+          json: true 
   
       #Upload Snyk Reports as Artifacts
       - name: Upload Snyk Reports
