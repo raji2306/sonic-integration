@@ -201,12 +201,25 @@ jobs:
         with:
           name: snyk-frontend-report
           path: snyk-frontend.json
+          
+      # Authenticate Snyk CLI
+      - name: Authenticate Snyk
+        run: snyk auth $SNYK_TOKEN
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      # Monitor Backend project to Snyk Dashboard
+      - name: Monitor Backend Project in Snyk Dashboard
+        run: snyk monitor --docker raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
       # Monitor Frontend project to Snyk Dashboard
       - name: Monitor Frontend Project in Snyk Dashboard
         run: snyk monitor --docker raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
-
-  
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          
       #Push Images Only If Scans Pass
       - name: Push Backend Image
         if: success()
