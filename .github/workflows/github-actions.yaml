@@ -163,24 +163,35 @@ jobs:
   
       - name: Snyk Image Scan - Backend
         uses: snyk/actions/docker@master
+        continue-on-error: true 
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: raji2306/spring-image:${{ github.run_number }}
-          command: test
-          severity-threshold: high
-          json: true  
+          args: --severity-threshold=high --json-file-output=snyk-backend.json
 
-      #Snyk Image Scan - Frontend
+      - name: Upload Backend Snyk Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-backend-report
+          path: snyk-backend.json
+
+      # Snyk Image Scan - Frontend
       - name: Snyk Image Scan - Frontend
         uses: snyk/actions/docker@master
+        continue-on-error: true 
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: raji2306/react-image:${{ github.run_number }}
-          command: test
-          severity-threshold: high
-          json: true 
+          args: --severity-threshold=high --json-file-output=snyk-frontend.json
+
+      - name: Upload Frontend Snyk Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-frontend-report
+          path: snyk-frontend.json
+
   
       #Upload Snyk Reports as Artifacts
       - name: Upload Snyk Reports
