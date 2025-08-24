@@ -17,7 +17,7 @@ jobs:
       - name: 'Download artifact from latest build'
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: github-actions.yaml
+          workflow: ci-cd-pipeline.yaml
           name: rds-endpoint
           path: rds-artifact
           workflow_conclusion: success
