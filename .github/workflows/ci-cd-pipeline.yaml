@@ -115,6 +115,7 @@ jobs:
         working-directory: ./react-frontend
         run: |
           mkdir -p test-reports
+          npm install
           npm run test:ci
           
       - name: Upload Frontend Test Reports
