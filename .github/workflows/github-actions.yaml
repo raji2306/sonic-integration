@@ -38,27 +38,14 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Validate and Prepare AWS RDS Database
+      - name: Prepare AWS RDS Database
         run: |
-          RDS_HOST="${{ needs.call-database-creation.outputs.rds_endpoint }}"
-          RDS_HOST_CLEAN="${RDS_HOST%%:*}"
-          RDS_USERNAME="${{ secrets.RDS_USERNAME }}"
-          RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
-      
-          echo "🔍 Checking if 'devops' database exists on $RDS_HOST_CLEAN..."
-      
-          DB_EXISTS=$(mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "SHOW DATABASES LIKE 'devops';" | grep devops || true)
-      
-          if [ -z "$DB_EXISTS" ]; then
-            echo "⚠️ 'devops' database not found. Creating it now..."
-            mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "CREATE DATABASE devops;"
-          else
-            echo "✅ 'devops' database already exists."
-          fi
-      
-          echo "📋 Tables in 'devops':"
-          mysql -h "$RDS_HOST_CLEAN" -P 3306 -u"$RDS_USERNAME" -p"$RDS_PASSWORD" -e "USE devops; SHOW TABLES;"
-          
+          chmod +x ./scripts/prepare-rds.sh
+          ./scripts/prepare-rds.sh "${{ needs.call-database-creation.outputs.rds_endpoint }}" "${{ secrets.RDS_USERNAME }}" "${{ secrets.RDS_PASSWORD }}"
+
+      - name: Run Backend Unit Tests
+        run: mvn test --file ./spring-backend/pom.xml
+        
       - name: Build Spring Boot app with AWS RDS
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
@@ -82,7 +69,6 @@ jobs:
             -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
             -Dsonar.login=${{ env.SONAR_TOKEN }}
             -Dsonar.qualitygate.wait=true
-      
 
       - name: Run Spring Boot app to initialize schema on AWS RDS
         env:
@@ -102,6 +88,12 @@ jobs:
           name: backend-jar
           path: ./spring-backend/target/*.jar
 
+      - name: Upload Backend Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-report
+          path: ./spring-backend/target/surefire-reports
+
   build-frontend:
     runs-on: ubuntu-latest
     needs: call-database-creation
@@ -119,6 +111,10 @@ jobs:
         working-directory: ./react-frontend
         run: npm install
 
+      - name: Run Frontend Unit Tests
+        working-directory: ./react-frontend
+        run: npm test -- --ci --reporters=default --reporters=jest-junit
+        
       - name: Build Frontend
         working-directory: ./react-frontend
         run: CI=false npm run build
@@ -142,6 +138,12 @@ jobs:
         with:
           name: frontend-build
           path: ./react-frontend/build
+
+      - name: Upload Frontend Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-report
+          path: ./react-frontend/test-reports
           
       - name: Handle RDS Endpoint
         id: export-rds
@@ -182,7 +184,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      #Build Docker Images
+      # Build Docker Images
       - name: Build Backend Image
         run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
   
@@ -201,13 +203,6 @@ jobs:
         with:
           image: raji2306/spring-image:${{ github.run_number }}
           args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
-      
-      # Upload Backend JSON report to GitHub Actions
-      - name: Upload Backend Snyk Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-backend-report
-          path: snyk-backend.json
     
       # Snyk Image Scan - Frontend
       - name: Snyk Image Scan & Upload - Frontend
@@ -220,11 +215,13 @@ jobs:
           args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
       
       # Upload Frontend JSON report to GitHub Actions
-      - name: Upload Frontend Snyk Report
+      - name: Upload Snyk Reports
         uses: actions/upload-artifact@v4
         with:
-          name: snyk-frontend-report
-          path: snyk-frontend.json
+          name: snyk-reports
+          path: |
+            snyk-backend.json
+            snyk-frontend.json
           
       # Authenticate Snyk CLI using token explicitly
       - name: Authenticate Snyk CLI
@@ -238,12 +235,10 @@ jobs:
       - name: Monitor Frontend Docker Image
         run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
           
-      #Push Images Only If Scans Pass
-      - name: Push Backend Image
+      # Push Images Only If Scans Pass
+      - name: Push Docker Images (if Snyk passes)
         if: success()
-        run: docker push raji2306/spring-image:${{ github.run_number }}
-  
-      - name: Push Frontend Image
-        if: success()
-        run: docker push raji2306/react-image:${{ github.run_number }}
+        run: |
+          docker push raji2306/spring-image:${{ github.run_number }}
+          docker push raji2306/react-image:${{ github.run_number }}
 
