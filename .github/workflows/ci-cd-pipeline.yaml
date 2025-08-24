@@ -45,7 +45,16 @@ jobs:
 
       - name: Run Backend Unit Tests
         run: mvn test --file ./spring-backend/pom.xml
-        
+
+      - name: Run Backend Tests with Coverage
+        run: mvn test jacoco:report --file ./spring-backend/pom.xml
+
+      - name: Upload Backend Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-coverage
+          path: ./spring-backend/target/site/jacoco
+          
       - name: Build Spring Boot app with AWS RDS
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
