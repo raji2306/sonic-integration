@@ -52,25 +52,28 @@
 		</dependency>
 	</dependencies>
 
-	<build>	
-		<finalName>devops-proj</finalName> 
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.1.2</version> <!-- Latest stable version -->
-            <configuration>
-                <testFailureIgnore>false</testFailureIgnore> <!-- Fail build on test failure -->
-                <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                <includes>
-                    <include>**/*Test.java</include>
-                </includes>
-            </configuration>
-        </plugin>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
-		</plugins>
+	<build>
+	    <finalName>devops-proj</finalName>
+	    <plugins>
+	        <!-- Maven Surefire Plugin -->
+	        <plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-surefire-plugin</artifactId>
+	            <version>3.1.2</version>
+	            <configuration>
+	                <testFailureIgnore>false</testFailureIgnore>
+	                <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+	                <includes>
+	                    <include>**/*Test.java</include>
+	                </includes>
+	            </configuration>
+	        </plugin>
+	
+	        <!-- Spring Boot Maven Plugin -->
+	        <plugin>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-maven-plugin</artifactId>
+	        </plugin>
+	    </plugins>
 	</build>
-
 </project>
