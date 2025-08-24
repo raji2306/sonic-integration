@@ -1,5 +1,5 @@
 module.exports = {
-  testEnvironment: "jsdom", // For React components
+  testEnvironment: "jsdom",
   transformIgnorePatterns: ["node_modules/(?!(axios)/)"],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy"
@@ -7,10 +7,8 @@ module.exports = {
   reporters: [
     "default",
     ["jest-junit", {
-      outputDirectory: "./test-reports",
+      outputDirectory: "react-frontend/test-reports",
       outputName: "frontend-test-report.xml"
     }]
-  ],
-  // Optional: avoid leaving async handles open (like API calls)
-  // setupFilesAfterEnv: ["<rootDir>/jest.setup.js"]
+  ]
 };
