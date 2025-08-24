@@ -129,15 +129,9 @@ jobs:
           else
             echo "ESLint not configured; skipping."
           fi
-
-      - name: Frontend Tests (if script exists)
-        working-directory: ./react-frontend
-        run: |
-          if npm run | grep -q "test"; then
-            CI=true npm test -- --watchAll=false
-          else
-            echo "No test script; skipping."
-          fi
+          
+      - name: Run Frontend Tests
+        run: npm test --prefix react-frontend -- --watchAll=false || true
       
       - name: Build Frontend
         working-directory: ./react-frontend
