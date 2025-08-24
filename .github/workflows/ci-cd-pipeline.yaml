@@ -113,8 +113,17 @@ jobs:
 
       - name: Run Frontend Unit Tests
         working-directory: ./react-frontend
-        run: npm test -- --ci --reporters=default --reporters=jest-junit
-        
+        run: |
+          mkdir -p test-reports
+          npm install --save-dev jest-junit
+          npm run test:ci
+          
+      - name: Upload Frontend Test Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-report
+          path: ./react-frontend/test-reports/frontend-test-report.xml
+
       - name: Build Frontend
         working-directory: ./react-frontend
         run: CI=false npm run build
@@ -138,12 +147,6 @@ jobs:
         with:
           name: frontend-build
           path: ./react-frontend/build
-
-      - name: Upload Frontend Test Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-test-report
-          path: ./react-frontend/test-reports
           
       - name: Handle RDS Endpoint
         id: export-rds
