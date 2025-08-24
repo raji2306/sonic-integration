@@ -46,23 +46,23 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # - name: Terraform Destroy
-      #   env:
-      #     TF_VAR_db_username: ${{ secrets.rds-username }}
-      #     TF_VAR_db_password: ${{ secrets.rds-password }}
-      #   run: terraform destroy -auto-approve
-
-      - name: Terraform Apply
+      - name: Terraform Destroy
         env:
           TF_VAR_db_username: ${{ secrets.rds-username }}
           TF_VAR_db_password: ${{ secrets.rds-password }}
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
 
-      - name: Show Outputs
-        run: terraform output
+      # - name: Terraform Apply
+      #   env:
+      #     TF_VAR_db_username: ${{ secrets.rds-username }}
+      #     TF_VAR_db_password: ${{ secrets.rds-password }}
+      #   run: terraform apply -auto-approve
 
-      - name: Output RDS Endpoint
-        id: output_rds
-        run: |
-          RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
-          echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+      # - name: Show Outputs
+      #   run: terraform output
+
+      # - name: Output RDS Endpoint
+      #   id: output_rds
+      #   run: |
+      #     RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
+      #     echo "endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
