@@ -102,148 +102,148 @@ jobs:
           name: backend-jar
           path: ./spring-backend/target/*.jar
 
-  # build-frontend:
-  #   runs-on: ubuntu-latest
-  #   needs: call-database-creation
-  #   steps:
-  #     - uses: actions/checkout@v3
+  build-frontend:
+    runs-on: ubuntu-latest
+    needs: call-database-creation
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: '18'
-  #         cache: npm
-  #         cache-dependency-path: ./react-frontend/package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: npm
+          cache-dependency-path: ./react-frontend/package-lock.json
 
-  #     - name: Install Dependencies & Build
-  #       working-directory: ./react-frontend
-  #       run: npm install
+      - name: Install Dependencies & Build
+        working-directory: ./react-frontend
+        run: npm install
 
-  #     - name: Build Frontend
-  #       working-directory: ./react-frontend
-  #       run: CI=false npm run build
+      - name: Build Frontend
+        working-directory: ./react-frontend
+        run: CI=false npm run build
 
-        # - name: SonarQube Scan for Frontend
-        #   uses: SonarSource/sonarcloud-github-action@v2
-        #   env:
-        #     SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-        #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        #   with:
-        #     args: >
-        #       -Dsonar.projectKey=ReactFrontend
-        #       -Dsonar.projectName=ReactFrontend
-        #       -Dsonar.sources=./react-frontend/src
-        #       -Dsonar.language=js
-        #       -Dsonar.exclusions=**/node_modules/**,**/build/**
-        #       -Dsonar.qualitygate.wait=true
+      - name: SonarQube Scan for Frontend
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+            SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+            args: >
+              -Dsonar.projectKey=ReactFrontend
+              -Dsonar.projectName=ReactFrontend
+              -Dsonar.sources=./react-frontend/src
+              -Dsonar.language=js
+              -Dsonar.exclusions=**/node_modules/**,**/build/**
+              -Dsonar.qualitygate.wait=true
 
-  #     - name: Upload Frontend Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: frontend-build
-  #         path: ./react-frontend/build
+      - name: Upload Frontend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ./react-frontend/build
           
-  #     - name: Handle RDS Endpoint
-  #       id: export-rds
-  #       run: |
-  #         echo "Saving and exporting RDS endpoint..."
-  #         echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
-  #         echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
-  #         echo "Saved value: $(cat rds-endpoint.txt)"
-  #       shell: bash
+      - name: Handle RDS Endpoint
+        id: export-rds
+        run: |
+          echo "Saving and exporting RDS endpoint..."
+          echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
+          echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
+          echo "Saved value: $(cat rds-endpoint.txt)"
+        shell: bash
         
-  #     - name: Upload RDS Endpoint Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: rds-endpoint
-  #         path: rds-endpoint.txt
+      - name: Upload RDS Endpoint Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rds-endpoint
+          path: rds-endpoint.txt
 
-  # dockerize:
-  #   needs: [build-backend, build-frontend]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+  dockerize:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Download Backend Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: backend-jar
-  #         path: ./spring-backend
+      - name: Download Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./spring-backend
 
-  #     - name: Download Frontend Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: frontend-build
-  #         path: ./react-frontend/build
+      - name: Download Frontend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./react-frontend/build
 
-  #     - name: Log in to DockerHub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  #     #Build Docker Images
-  #     - name: Build Backend Image
-  #       run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
+      #Build Docker Images
+      - name: Build Backend Image
+        run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
   
-  #     - name: Build Frontend Image
-  #       run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+      - name: Build Frontend Image
+        run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
       
-  #     - name: Install Snyk CLI
-  #       run: npm install -g snyk
+      - name: Install Snyk CLI
+        run: npm install -g snyk
         
-  #     # Snyk Image Scan - Backend
-  #     - name: Snyk Image Scan & Upload - Backend
-  #       uses: snyk/actions/docker@master
-  #       continue-on-error: true
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #       with:
-  #         image: raji2306/spring-image:${{ github.run_number }}
-  #         args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
+      # Snyk Image Scan - Backend
+      - name: Snyk Image Scan & Upload - Backend
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: raji2306/spring-image:${{ github.run_number }}
+          args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
       
-  #     # Upload Backend JSON report to GitHub Actions
-  #     - name: Upload Backend Snyk Report
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: snyk-backend-report
-  #         path: snyk-backend.json
+      # Upload Backend JSON report to GitHub Actions
+      - name: Upload Backend Snyk Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-backend-report
+          path: snyk-backend.json
     
-  #     # Snyk Image Scan - Frontend
-  #     - name: Snyk Image Scan & Upload - Frontend
-  #       uses: snyk/actions/docker@master
-  #       continue-on-error: true
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #       with:
-  #         image: raji2306/react-image:${{ github.run_number }}
-  #         args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
+      # Snyk Image Scan - Frontend
+      - name: Snyk Image Scan & Upload - Frontend
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: raji2306/react-image:${{ github.run_number }}
+          args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
       
-  #     # Upload Frontend JSON report to GitHub Actions
-  #     - name: Upload Frontend Snyk Report
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: snyk-frontend-report
-  #         path: snyk-frontend.json
+      # Upload Frontend JSON report to GitHub Actions
+      - name: Upload Frontend Snyk Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-frontend-report
+          path: snyk-frontend.json
           
-  #     # Authenticate Snyk CLI using token explicitly
-  #     - name: Authenticate Snyk CLI
-  #       run: snyk auth --auth-type=token $SNYK_TOKEN
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      # Authenticate Snyk CLI using token explicitly
+      - name: Authenticate Snyk CLI
+        run: snyk auth --auth-type=token $SNYK_TOKEN
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
-  #     - name: Monitor Backend Docker Image
-  #       run: snyk container monitor raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
+      - name: Monitor Backend Docker Image
+        run: snyk container monitor raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
 
-  #     - name: Monitor Frontend Docker Image
-  #       run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
+      - name: Monitor Frontend Docker Image
+        run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
           
-  #     #Push Images Only If Scans Pass
-  #     - name: Push Backend Image
-  #       if: success()
-  #       run: docker push raji2306/spring-image:${{ github.run_number }}
+      #Push Images Only If Scans Pass
+      - name: Push Backend Image
+        if: success()
+        run: docker push raji2306/spring-image:${{ github.run_number }}
   
-  #     - name: Push Frontend Image
-  #       if: success()
-  #       run: docker push raji2306/react-image:${{ github.run_number }}
+      - name: Push Frontend Image
+        if: success()
+        run: docker push raji2306/react-image:${{ github.run_number }}
 
