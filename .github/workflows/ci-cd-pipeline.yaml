@@ -115,8 +115,7 @@ jobs:
         working-directory: ./react-frontend
         run: |
           mkdir -p test-reports
-          npm install --save-dev jest-junit
-          npm run test:ci
+          CI=true npm test -- --reporters=default --reporters=jest-junit
           
       - name: Upload Frontend Test Reports
         uses: actions/upload-artifact@v4
