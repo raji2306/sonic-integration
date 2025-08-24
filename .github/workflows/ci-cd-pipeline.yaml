@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-report
-          path: ./spring-backend/target/surefire-reports/**
+          path: ./spring-backend/**
 
   build-frontend:
     runs-on: ubuntu-latest
