@@ -55,6 +55,14 @@ jobs:
              mvn -B clean package --file ./spring-backend/pom.xml
              echo $SPRING_DATASOURCE_URL
 
+      - name: Cache Maven Repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+            
       # - name: SonarQube Scan for Backend
       #   uses: SonarSource/sonarcloud-github-action@v2
       #   env:
@@ -92,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-report
-          path: ./spring-backend/target/surefire-reports
+          path: ./spring-backend/target/surefire-reports/**
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -110,6 +118,26 @@ jobs:
       - name: Install Dependencies & Build
         working-directory: ./react-frontend
         run: npm install
+
+      - name: Lint (ESLint if present)
+        working-directory: ./react-frontend
+        run: |
+          if npm run | grep -q "eslint"; then
+            npm run lint
+          elif npx -y eslint -v >/dev/null 2>&1; then
+            npx eslint "src/**/*.{js,jsx,ts,tsx}" || true
+          else
+            echo "ESLint not configured; skipping."
+          fi
+
+      - name: Frontend Tests (if script exists)
+        working-directory: ./react-frontend
+        run: |
+          if npm run | grep -q "test"; then
+            CI=true npm test -- --watchAll=false
+          else
+            echo "No test script; skipping."
+          fi
       
       - name: Build Frontend
         working-directory: ./react-frontend
