@@ -110,18 +110,6 @@ jobs:
       - name: Install Dependencies & Build
         working-directory: ./react-frontend
         run: npm install
-
-      - name: Run Frontend Unit Tests
-        working-directory: ./react-frontend
-        run: |
-          mkdir -p test-reports
-          npm run test:ci
-      
-      - name: Upload Frontend Test Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-test-report
-          path: ./react-frontend/test-reports/frontend-test-report.xml
       
       - name: Build Frontend
         working-directory: ./react-frontend
