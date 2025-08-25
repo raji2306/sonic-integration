@@ -26,6 +26,10 @@ jobs:
         with:
           terraform_version: 1.6.0
 
+      - name: Terraform Destroy
+        working-directory: terraform/sonarqube
+        run: terraform destroy -auto-approve
+
       - name: Terraform Init
         working-directory: terraform/sonarqube
         run: terraform init
