@@ -2,14 +2,16 @@ name: EKS-Deploy-Test
 
 on:
   workflow_dispatch:
-  # workflow_run:
-  #   workflows: ["Springboot-React CI/CD"]
-  #   types:
-  #     - completed
+  workflow_run:
+    workflows: ["Springboot-React CI/CD"]
+    types:
+      - completed
 
 jobs:
   create-eks:
     runs-on: ubuntu-latest
+    environment:
+      name: production 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
