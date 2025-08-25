@@ -2,6 +2,15 @@ name: Deploy SonarQube EC2
 
 on:
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose action: install or delete'
+        required: true
+        default: 'install'
+        type: choice
+        options:
+          - install
+          - delete
 
 jobs:
   deploy:
@@ -29,11 +38,13 @@ jobs:
       - name: Terraform Init
         working-directory: terraform/sonarqube
         run: terraform init
-        
-      - name: Terraform Destroy
+
+      - name: Terraform Apply (Install)
+        if: ${{ github.event.inputs.action == 'install' }}
+        working-directory: terraform/sonarqube
+        run: terraform apply -auto-approve
+
+      - name: Terraform Destroy (Delete)
+        if: ${{ github.event.inputs.action == 'delete' }}
         working-directory: terraform/sonarqube
         run: terraform destroy -auto-approve
-
-      # - name: Terraform Apply
-      #   working-directory: terraform/sonarqube
-      #   run: terraform apply -auto-approve
