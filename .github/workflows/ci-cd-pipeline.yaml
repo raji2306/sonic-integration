@@ -161,6 +161,8 @@ jobs:
               -Dsonar.sources=./react-frontend/src
               -Dsonar.language=js
               -Dsonar.exclusions=**/node_modules/**,**/build/**
+              -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+              -Dsonar.login=${{ env.SONAR_TOKEN }}
               -Dsonar.qualitygate.wait=true
 
       - name: Upload Frontend Artifact
