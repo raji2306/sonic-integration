@@ -31,7 +31,7 @@ resource "aws_security_group" "sonarqube_sg" {
 }
 
 resource "aws_instance" "sonarqube_runner" {
-  ami                    = "ami-0f58c7d8c5f3f8c3e" 
+  ami                    = "ami-02d26659fd82cf299" 
   instance_type          = "t2.medium"
   key_name               = "sonarqube" 
   vpc_security_group_ids = [aws_security_group.sonarqube_sg.id]
