@@ -24,247 +24,247 @@ jobs:
       rds-username: ${{ secrets.RDS_USERNAME }}
       rds-password: ${{ secrets.RDS_PASSWORD }}
 
-  build-backend:
-    needs: call-database-creation
-    runs-on: ubuntu-latest
+  # build-backend:
+  #   needs: call-database-creation
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
+  #     - name: Set up JDK 17
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #         cache: maven
 
-      - name: Prepare AWS RDS Database
-        run: |
-          chmod +x ./scripts/prepare-rds.sh
-          ./scripts/prepare-rds.sh "${{ needs.call-database-creation.outputs.rds_endpoint }}" "${{ secrets.RDS_USERNAME }}" "${{ secrets.RDS_PASSWORD }}"
+  #     - name: Prepare AWS RDS Database
+  #       run: |
+  #         chmod +x ./scripts/prepare-rds.sh
+  #         ./scripts/prepare-rds.sh "${{ needs.call-database-creation.outputs.rds_endpoint }}" "${{ secrets.RDS_USERNAME }}" "${{ secrets.RDS_PASSWORD }}"
 
-      # - name: Run Backend Unit Tests
-      #   run: mvn test --file ./spring-backend/pom.xml
+  #     # - name: Run Backend Unit Tests
+  #     #   run: mvn test --file ./spring-backend/pom.xml
 
-      # - name: Run Backend Tests with Coverage
-      #   run: mvn test jacoco:report --file ./spring-backend/pom.xml
+  #     # - name: Run Backend Tests with Coverage
+  #     #   run: mvn test jacoco:report --file ./spring-backend/pom.xml
 
-      - name: Run Backend Tests with Coverage
-        run: mvn clean test jacoco:report --file ./spring-backend/pom.xml
+  #     - name: Run Backend Tests with Coverage
+  #       run: mvn clean test jacoco:report --file ./spring-backend/pom.xml
         
-      - name: Upload Backend Test Coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-coverage
-          path: ./spring-backend/target/site/jacoco
+  #     - name: Upload Backend Test Coverage
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: backend-test-coverage
+  #         path: ./spring-backend/target/site/jacoco
           
-      - name: Build Spring Boot app with AWS RDS
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
-          SPRING_DATASOURCE_USERNAME: admin
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-        run: |
-             mvn -B clean package --file ./spring-backend/pom.xml
-             echo $SPRING_DATASOURCE_URL
+  #     - name: Build Spring Boot app with AWS RDS
+  #       env:
+  #         SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
+  #         SPRING_DATASOURCE_USERNAME: admin
+  #         SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+  #       run: |
+  #            mvn -B clean package --file ./spring-backend/pom.xml
+  #            echo $SPRING_DATASOURCE_URL
 
-      - name: Cache Maven Repository
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
+  #     - name: Cache Maven Repository
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/.m2/repository
+  #         key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+  #         restore-keys: |
+  #           maven-${{ runner.os }}-
             
-      - name: SonarQube Scan for Backend
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=SpringbootBackend
-            -Dsonar.projectName=SpringbootBackend
-            -Dsonar.sources=./spring-backend/src
-            -Dsonar.java.binaries=./spring-backend/target/classes
-            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
-            -Dsonar.login=${{ env.SONAR_TOKEN }}
-            -Dsonar.qualitygate.wait=true
+  #     - name: SonarQube Scan for Backend
+  #       uses: SonarSource/sonarcloud-github-action@v2
+  #       env:
+  #         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #       with:
+  #         args: >
+  #           -Dsonar.projectKey=SpringbootBackend
+  #           -Dsonar.projectName=SpringbootBackend
+  #           -Dsonar.sources=./spring-backend/src
+  #           -Dsonar.java.binaries=./spring-backend/target/classes
+  #           -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+  #           -Dsonar.login=${{ env.SONAR_TOKEN }}
+  #           -Dsonar.qualitygate.wait=true
 
-      - name: Run Spring Boot app to initialize schema on AWS RDS
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
-          SPRING_DATASOURCE_USERNAME: admin
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-        run: |
-          java -jar ./spring-backend/target/*.jar &
-          APP_PID=$!
-          echo "⏳ Waiting for Spring Boot to initialize schema on RDS..."
-          sleep 30
-          kill $APP_PID
+  #     - name: Run Spring Boot app to initialize schema on AWS RDS
+  #       env:
+  #         SPRING_DATASOURCE_URL: jdbc:mysql://${{ needs.call-database-creation.outputs.rds_endpoint }}/devops
+  #         SPRING_DATASOURCE_USERNAME: admin
+  #         SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+  #       run: |
+  #         java -jar ./spring-backend/target/*.jar &
+  #         APP_PID=$!
+  #         echo "⏳ Waiting for Spring Boot to initialize schema on RDS..."
+  #         sleep 30
+  #         kill $APP_PID
 
-      - name: Upload Backend Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-jar
-          path: ./spring-backend/target/*.jar
+  #     - name: Upload Backend Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: backend-jar
+  #         path: ./spring-backend/target/*.jar
 
-      - name: Upload Backend Test Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-report
-          path: ./spring-backend/**
+  #     - name: Upload Backend Test Reports
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: backend-test-report
+  #         path: ./spring-backend/**
 
-  build-frontend:
-    runs-on: ubuntu-latest
-    needs: call-database-creation
-    steps:
-      - uses: actions/checkout@v3
+  # build-frontend:
+  #   runs-on: ubuntu-latest
+  #   needs: call-database-creation
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: npm
-          cache-dependency-path: ./react-frontend/package-lock.json
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '18'
+  #         cache: npm
+  #         cache-dependency-path: ./react-frontend/package-lock.json
 
-      - name: Install Dependencies & Build
-        working-directory: ./react-frontend
-        run: npm install
+  #     - name: Install Dependencies & Build
+  #       working-directory: ./react-frontend
+  #       run: npm install
 
-      - name: Lint (ESLint if present)
-        working-directory: ./react-frontend
-        run: |
-          if npm run | grep -q "eslint"; then
-            npm run lint
-          elif npx -y eslint -v >/dev/null 2>&1; then
-            npx eslint "src/**/*.{js,jsx,ts,tsx}" || true
-          else
-            echo "ESLint not configured; skipping."
-          fi
+  #     - name: Lint (ESLint if present)
+  #       working-directory: ./react-frontend
+  #       run: |
+  #         if npm run | grep -q "eslint"; then
+  #           npm run lint
+  #         elif npx -y eslint -v >/dev/null 2>&1; then
+  #           npx eslint "src/**/*.{js,jsx,ts,tsx}" || true
+  #         else
+  #           echo "ESLint not configured; skipping."
+  #         fi
           
-      - name: Run Frontend Tests
-        run: npm test --prefix react-frontend -- --watchAll=false || true
+  #     - name: Run Frontend Tests
+  #       run: npm test --prefix react-frontend -- --watchAll=false || true
       
-      - name: Build Frontend
-        working-directory: ./react-frontend
-        run: CI=false npm run build
+  #     - name: Build Frontend
+  #       working-directory: ./react-frontend
+  #       run: CI=false npm run build
 
-      - name: SonarQube Scan for Frontend
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-            SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-            args: >
-              -Dsonar.projectKey=ReactFrontend
-              -Dsonar.projectName=ReactFrontend
-              -Dsonar.sources=./react-frontend/src
-              -Dsonar.language=js
-              -Dsonar.exclusions=**/node_modules/**,**/build/**
-              -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
-              -Dsonar.login=${{ env.SONAR_TOKEN }}
-              -Dsonar.qualitygate.wait=true
+  #     - name: SonarQube Scan for Frontend
+  #       uses: SonarSource/sonarcloud-github-action@v2
+  #       env:
+  #           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+  #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #       with:
+  #           args: >
+  #             -Dsonar.projectKey=ReactFrontend
+  #             -Dsonar.projectName=ReactFrontend
+  #             -Dsonar.sources=./react-frontend/src
+  #             -Dsonar.language=js
+  #             -Dsonar.exclusions=**/node_modules/**,**/build/**
+  #             -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+  #             -Dsonar.login=${{ env.SONAR_TOKEN }}
+  #             -Dsonar.qualitygate.wait=true
 
-      - name: Upload Frontend Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: ./react-frontend/build
+  #     - name: Upload Frontend Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: frontend-build
+  #         path: ./react-frontend/build
           
-      - name: Handle RDS Endpoint
-        id: export-rds
-        run: |
-          echo "Saving and exporting RDS endpoint..."
-          echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
-          echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
-          echo "Saved value: $(cat rds-endpoint.txt)"
-        shell: bash
+  #     - name: Handle RDS Endpoint
+  #       id: export-rds
+  #       run: |
+  #         echo "Saving and exporting RDS endpoint..."
+  #         echo "${{ needs.call-database-creation.outputs.rds_endpoint }}" > rds-endpoint.txt
+  #         echo "rds_endpoint=${{ needs.call-database-creation.outputs.rds_endpoint }}" >> $GITHUB_OUTPUT
+  #         echo "Saved value: $(cat rds-endpoint.txt)"
+  #       shell: bash
         
-      - name: Upload RDS Endpoint Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rds-endpoint
-          path: rds-endpoint.txt
+  #     - name: Upload RDS Endpoint Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: rds-endpoint
+  #         path: rds-endpoint.txt
 
-  dockerize:
-    needs: [build-backend, build-frontend]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  # dockerize:
+  #   needs: [build-backend, build-frontend]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Download Backend Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: ./spring-backend
+  #     - name: Download Backend Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: backend-jar
+  #         path: ./spring-backend
 
-      - name: Download Frontend Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: ./react-frontend/build
+  #     - name: Download Frontend Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: frontend-build
+  #         path: ./react-frontend/build
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+  #     - name: Log in to DockerHub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         username: ${{ secrets.DOCKER_USERNAME }}
+  #         password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build Docker Images
-      - name: Build Backend Image
-        run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
+  #     # Build Docker Images
+  #     - name: Build Backend Image
+  #       run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
   
-      - name: Build Frontend Image
-        run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+  #     - name: Build Frontend Image
+  #       run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
       
-      - name: Install Snyk CLI
-        run: npm install -g snyk
+  #     - name: Install Snyk CLI
+  #       run: npm install -g snyk
         
-      # Snyk Image Scan - Backend
-      - name: Snyk Image Scan & Upload - Backend
-        uses: snyk/actions/docker@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: raji2306/spring-image:${{ github.run_number }}
-          args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
+  #     # Snyk Image Scan - Backend
+  #     - name: Snyk Image Scan & Upload - Backend
+  #       uses: snyk/actions/docker@master
+  #       continue-on-error: true
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       with:
+  #         image: raji2306/spring-image:${{ github.run_number }}
+  #         args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
     
-      # Snyk Image Scan - Frontend
-      - name: Snyk Image Scan & Upload - Frontend
-        uses: snyk/actions/docker@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: raji2306/react-image:${{ github.run_number }}
-          args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
+  #     # Snyk Image Scan - Frontend
+  #     - name: Snyk Image Scan & Upload - Frontend
+  #       uses: snyk/actions/docker@master
+  #       continue-on-error: true
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #       with:
+  #         image: raji2306/react-image:${{ github.run_number }}
+  #         args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
       
-      # Upload Frontend JSON report to GitHub Actions
-      - name: Upload Snyk Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-reports
-          path: |
-            snyk-backend.json
-            snyk-frontend.json
+  #     # Upload Frontend JSON report to GitHub Actions
+  #     - name: Upload Snyk Reports
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: snyk-reports
+  #         path: |
+  #           snyk-backend.json
+  #           snyk-frontend.json
           
-      # Authenticate Snyk CLI using token explicitly
-      - name: Authenticate Snyk CLI
-        run: snyk auth --auth-type=token $SNYK_TOKEN
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     # Authenticate Snyk CLI using token explicitly
+  #     - name: Authenticate Snyk CLI
+  #       run: snyk auth --auth-type=token $SNYK_TOKEN
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
-      - name: Monitor Backend Docker Image
-        run: snyk container monitor raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
+  #     - name: Monitor Backend Docker Image
+  #       run: snyk container monitor raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
 
-      - name: Monitor Frontend Docker Image
-        run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
+  #     - name: Monitor Frontend Docker Image
+  #       run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
           
-      # Push Images Only If Scans Pass
-      - name: Push Docker Images (if Snyk passes)
-        if: success()
-        run: |
-          docker push raji2306/spring-image:${{ github.run_number }}
-          docker push raji2306/react-image:${{ github.run_number }}
+  #     # Push Images Only If Scans Pass
+  #     - name: Push Docker Images (if Snyk passes)
+  #       if: success()
+  #       run: |
+  #         docker push raji2306/spring-image:${{ github.run_number }}
+  #         docker push raji2306/react-image:${{ github.run_number }}
 
