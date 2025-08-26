@@ -234,7 +234,7 @@ jobs:
         run: sleep 420   # 7 minutes
   
   cleanup:
-    needs: deploy-app
+    needs: [deploy-app, create-eks]
     runs-on: ubuntu-latest
     if: ${{ needs.create-eks.result == 'success' }}
     steps:
