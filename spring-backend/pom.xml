@@ -80,7 +80,18 @@
                 </includes>
             </configuration>
         </plugin>
-
+        <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>8.4.0</version> <!-- Use the latest version -->
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>check</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
         <!-- JaCoCo: Generates test coverage reports -->
         <plugin>
             <groupId>org.jacoco</groupId>
