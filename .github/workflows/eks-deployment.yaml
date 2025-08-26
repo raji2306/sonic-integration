@@ -236,7 +236,7 @@ jobs:
   cleanup:
     needs: deploy-app
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ needs.create-eks.result == 'success' }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
