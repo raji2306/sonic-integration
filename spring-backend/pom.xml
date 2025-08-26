@@ -80,18 +80,23 @@
                 </includes>
             </configuration>
         </plugin>
-        <plugin>
-            <groupId>org.owasp</groupId>
-            <artifactId>dependency-check-maven</artifactId>
-            <version>8.4.0</version> <!-- Use the latest version -->
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>check</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+         <plugin>
+           <groupId>org.owasp</groupId>
+           <artifactId>dependency-check-maven</artifactId>
+           <version>12.1.0</version> <!-- Latest stable version -->
+           <executions>
+             <execution>
+               <goals>
+                 <goal>check</goal>
+               </goals>
+             </execution>
+           </executions>
+           <configuration>
+             <failOnError>false</failOnError> <!-- Prevent CI from failing if NVD is unreachable -->
+             <dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory> <!-- Optional: cache location -->
+             <format>HTML</format> <!-- Optional: generate readable report -->
+           </configuration>
+         </plugin>
         <!-- JaCoCo: Generates test coverage reports -->
         <plugin>
             <groupId>org.jacoco</groupId>
