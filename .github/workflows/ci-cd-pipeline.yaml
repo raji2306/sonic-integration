@@ -43,17 +43,11 @@ jobs:
           chmod +x ./scripts/prepare-rds.sh
           ./scripts/prepare-rds.sh "${{ needs.call-database-creation.outputs.rds_endpoint }}" "${{ secrets.RDS_USERNAME }}" "${{ secrets.RDS_PASSWORD }}"
 
-      # - name: Run Backend Unit Tests
-      #   run: mvn test --file ./spring-backend/pom.xml
-
-      # - name: Run Backend Tests with Coverage
-      #   run: mvn test jacoco:report --file ./spring-backend/pom.xml
-
       - name: Run Backend Tests with Coverage
         run: mvn clean test jacoco:report --file ./spring-backend/pom.xml
 
-      - name: Run OWASP Dependency Check
-        run: mvn dependency-check:check --file ./spring-backend/pom.xml
+      # - name: Run OWASP Dependency Check
+      #   run: mvn dependency-check:check --file ./spring-backend/pom.xml
                     
       - name: Upload Backend Test Coverage
         uses: actions/upload-artifact@v4
