@@ -53,7 +53,7 @@ jobs:
         run: mvn clean test jacoco:report --file ./spring-backend/pom.xml
 
       - name: Run OWASP Dependency Check
-        run: mvn dependency-check:check
+        run: mvn org.owasp:dependency-check-maven:8.4.0:check
         
       - name: Upload Backend Test Coverage
         uses: actions/upload-artifact@v4
