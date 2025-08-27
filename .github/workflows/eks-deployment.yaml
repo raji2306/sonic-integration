@@ -231,7 +231,7 @@ jobs:
           echo ""
 
       - name: Sleep for pods to stabilize
-        run: sleep 600   # 7 minutes
+        run: sleep 100   # 7 minutes
 
   setup-monitoring:
     needs: deploy-app
@@ -303,7 +303,10 @@ jobs:
       - name: Get Grafana Admin Password
         run: |
           kubectl get secret grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
-  
+
+      - name: Sleep for pods to stabilize
+        run: sleep 900   # 7 minutes
+        
   cleanup:
     needs: [deploy-app, create-eks, setup-monitoring]
     runs-on: ubuntu-latest
