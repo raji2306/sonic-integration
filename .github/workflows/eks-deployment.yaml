@@ -276,8 +276,9 @@ jobs:
             --set kubeStateMetrics.enabled=true \
             --set nodeExporter.enabled=true \
             --set server.extraFlags="{--enable-feature=pod-annotations}"
-          
+      
           helm install grafana grafana/grafana --namespace monitoring
+
 
       - name: Expose Prometheus and Grafana via LoadBalancer
         run: |
