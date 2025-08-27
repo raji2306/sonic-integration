@@ -234,7 +234,7 @@ jobs:
         run: sleep 100   # 7 minutes
   
   setup-monitoring:
-    # needs: deploy-app
+    needs: deploy-app
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
