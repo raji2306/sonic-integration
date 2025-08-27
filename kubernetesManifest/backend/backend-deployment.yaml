@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: raji2306/spring-image:30                  #spring-image:44
+          image: raji2306/spring-image:37                #spring-image:44
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
