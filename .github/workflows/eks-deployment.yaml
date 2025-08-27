@@ -232,7 +232,7 @@ jobs:
 
       - name: Sleep for pods to stabilize
         run: sleep 100   # 7 minutes
-
+  
   setup-monitoring:
     needs: deploy-app
     runs-on: ubuntu-latest
@@ -264,8 +264,8 @@ jobs:
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
-      
-          # Enable annotation-based discovery
+  
+          # Install Prometheus with annotation discovery and LoadBalancer
           helm install prometheus prometheus-community/prometheus \
             --namespace monitoring \
             --create-namespace \
@@ -276,36 +276,47 @@ jobs:
             --set kubeStateMetrics.enabled=true \
             --set nodeExporter.enabled=true \
             --set server.extraFlags="{--enable-feature=pod-annotations}"
-      
+  
+          # Install Grafana
           helm install grafana grafana/grafana --namespace monitoring
-
-
+  
       - name: Expose Prometheus and Grafana via LoadBalancer
         run: |
           kubectl patch svc prometheus-server -n monitoring -p '{"spec": {"type": "LoadBalancer"}}'
           kubectl patch svc grafana -n monitoring -p '{"spec": {"type": "LoadBalancer"}}'
-
+  
       - name: Wait for External URLs
         run: |
+          SUCCESS=false
           for i in {1..30}; do
-            PROMETHEUS_URL=$(kubectl get svc prometheus-server -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            GRAFANA_URL=$(kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            if [ -n "$PROMETHEUS_URL" ] && [ -n "$GRAFANA_URL" ]; then
-              echo "Prometheus URL: $PROMETHEUS_URL"
-              echo "Grafana URL: $GRAFANA_URL"
-              echo "PROMETHEUS_URL=$PROMETHEUS_URL" >> $GITHUB_ENV
-              echo "GRAFANA_URL=$GRAFANA_URL" >> $GITHUB_ENV
+            PROM_HOST=$(kubectl get svc prometheus-server -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            GRAF_HOST=$(kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ -n "$PROM_HOST" ] && [ -n "$GRAF_HOST" ]; then
+              PROM_URL="http://$PROM_HOST:9090"
+              GRAF_URL="http://$GRAF_HOST:3000"
+              echo "Prometheus URL: $PROM_URL"
+              echo "Grafana URL: $GRAF_URL"
+              echo "PROMETHEUS_URL=$PROM_URL" >> $GITHUB_ENV
+              echo "GRAFANA_URL=$GRAF_URL" >> $GITHUB_ENV
+              SUCCESS=true
               break
             fi
+            echo "Waiting for Prometheus/Grafana... ($i/30)"
             sleep 20
           done
-
+  
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Prometheus or Grafana did not become ready in time. Marking this stage as failed."
+            exit 1
+          fi
+  
       - name: Get Grafana Admin Password
         run: |
           kubectl get secret grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
-
+  
       - name: Sleep for pods to stabilize
-        run: sleep 900   # 7 minutes
+        run: sleep 180
+
         
   cleanup:
     needs: [deploy-app, create-eks, setup-monitoring]
