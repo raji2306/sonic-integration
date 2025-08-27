@@ -279,8 +279,8 @@ jobs:
             --set server.resources.requests.memory=128Mi \
             --set server.resources.limits.cpu=250m \
             --set server.resources.limits.memory=256Mi \
-            --set server.extraFlags="{--enable-feature=pod-annotations}"
-  
+            --set server.extraFlags='--enable-feature=pod-annotations'
+
           # Grafana
           helm upgrade --install grafana grafana/grafana --namespace monitoring
   
