@@ -183,85 +183,85 @@ jobs:
           name: rds-endpoint
           path: rds-endpoint.txt
 
-  # dockerize:
-  #   needs: [build-backend, build-frontend]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+  dockerize:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Download Backend Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: backend-jar
-  #         path: ./spring-backend
+      - name: Download Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: ./spring-backend
 
-  #     - name: Download Frontend Artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: frontend-build
-  #         path: ./react-frontend/build
+      - name: Download Frontend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: ./react-frontend/build
 
-  #     - name: Log in to DockerHub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  #     # Build Docker Images
-  #     - name: Build Backend Image
-  #       run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
+      # Build Docker Images
+      - name: Build Backend Image
+        run: docker build -t raji2306/spring-image:${{ github.run_number }} ./spring-backend
   
-  #     - name: Build Frontend Image
-  #       run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
+      - name: Build Frontend Image
+        run: docker build -t raji2306/react-image:${{ github.run_number }} ./react-frontend
       
-  #     - name: Install Snyk CLI
-  #       run: npm install -g snyk
+      - name: Install Snyk CLI
+        run: npm install -g snyk
         
-  #     # Snyk Image Scan - Backend
-  #     - name: Snyk Image Scan & Upload - Backend
-  #       uses: snyk/actions/docker@master
-  #       continue-on-error: true
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #       with:
-  #         image: raji2306/spring-image:${{ github.run_number }}
-  #         args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
+      # Snyk Image Scan - Backend
+      - name: Snyk Image Scan & Upload - Backend
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: raji2306/spring-image:${{ github.run_number }}
+          args: --severity-threshold=high --json-file-output=snyk-backend.json --all-sub-projects
     
-  #     # Snyk Image Scan - Frontend
-  #     - name: Snyk Image Scan & Upload - Frontend
-  #       uses: snyk/actions/docker@master
-  #       continue-on-error: true
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #       with:
-  #         image: raji2306/react-image:${{ github.run_number }}
-  #         args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
+      # Snyk Image Scan - Frontend
+      - name: Snyk Image Scan & Upload - Frontend
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: raji2306/react-image:${{ github.run_number }}
+          args: --severity-threshold=high --json-file-output=snyk-frontend.json --all-sub-projects
       
-  #     # Upload Frontend JSON report to GitHub Actions
-  #     - name: Upload Snyk Reports
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: snyk-reports
-  #         path: |
-  #           snyk-backend.json
-  #           snyk-frontend.json
+      # Upload Frontend JSON report to GitHub Actions
+      - name: Upload Snyk Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-reports
+          path: |
+            snyk-backend.json
+            snyk-frontend.json
           
-  #     # Authenticate Snyk CLI using token explicitly
-  #     - name: Authenticate Snyk CLI
-  #       run: snyk auth --auth-type=token $SNYK_TOKEN
-  #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      # Authenticate Snyk CLI using token explicitly
+      - name: Authenticate Snyk CLI
+        run: snyk auth --auth-type=token $SNYK_TOKEN
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
-  #     - name: Monitor Backend Docker Image
-  #       run: snyk container monitor raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
+      - name: Monitor Backend Docker Image
+        run: snyk container monitor raji2306/spring-image:${{ github.run_number }} --org=raji2306 --project-name=backend
 
-  #     - name: Monitor Frontend Docker Image
-  #       run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
+      - name: Monitor Frontend Docker Image
+        run: snyk container monitor raji2306/react-image:${{ github.run_number }} --org=raji2306 --project-name=frontend
           
-  #     # Push Images Only If Scans Pass
-  #     - name: Push Docker Images (if Snyk passes)
-  #       if: success()
-  #       run: |
-  #         docker push raji2306/spring-image:${{ github.run_number }}
-  #         docker push raji2306/react-image:${{ github.run_number }}
+      # Push Images Only If Scans Pass
+      - name: Push Docker Images (if Snyk passes)
+        if: success()
+        run: |
+          docker push raji2306/spring-image:${{ github.run_number }}
+          docker push raji2306/react-image:${{ github.run_number }}
 
