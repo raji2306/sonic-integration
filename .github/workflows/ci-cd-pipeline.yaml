@@ -4,7 +4,7 @@ run-name: Hexaware-Sonic-Run
 on:
   pull_request:
     branches:
-      - master        # base branch must be master
+      - main        # base branch must be main
     types:
       - closed   
   workflow_dispatch:
