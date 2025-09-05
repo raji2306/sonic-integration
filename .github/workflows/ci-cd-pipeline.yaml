@@ -2,11 +2,11 @@ name: Springboot-React CI/CD
 run-name: Hexaware-Sonic-Run
 
 on:
-  pull_request:
-    branches:
-      - main        # base branch must be main
-    types:
-      - closed   
+  # pull_request:
+  #   branches:
+  #     - main        # base branch must be main
+  #   types:
+  #     - closed   
   workflow_dispatch:
 
 permissions: write-all
