@@ -8,310 +8,44 @@ on:
       - completed
 
 jobs:
-  # create-eks:
-  #   if: ${{ github.event.workflow_run.conclusion == 'success' }}
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: production 
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
-
-  #     - name: 'Download artifact from latest build'
-  #       uses: dawidd6/action-download-artifact@v6
-  #       with:
-  #         workflow: ci-cd-pipeline.yaml
-  #         name: rds-endpoint
-  #         path: rds-artifact
-  #         workflow_conclusion: success
-  #         branch: main
-      
-  #     - name: Show downloaded RDS Endpoint
-  #       run: |
-  #         cat rds-artifact/rds-endpoint.txt
-      
-  #     - name: Export RDS Endpoint to Environment
-  #       run: |
-  #         echo "RDS_ENDPOINT=$(cat rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
-      
-  #     - name: Replace RDS Endpoint in Backend ConfigMap
-  #       run: |
-  #         pwd 
-  #         ls -lrt
-  #         sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}/devops|g" \
-  #         kubernetesManifest/backend/backend-configmap.yaml
-  #         cat kubernetesManifest/backend/backend-configmap.yaml
-      
-  #     - name: Verify Replacement
-  #       run: |
-  #         grep "${RDS_ENDPOINT}" kubernetesManifest/backend/backend-configmap.yaml
-          
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ap-south-1
-
-  #     - name: Setup and deploy with eksctl
-  #       run: |
-  #           curl -sSL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
-  #             | tar xz && sudo mv eksctl /usr/local/bin/
-          
-  #           curl -sSLO "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/$(uname -s | tr '[:upper:]' '[:lower:]')/amd64/kubectl" \
-  #             && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-
-  #           eksctl version
-  #           kubectl version --client
-
-  #     - name: Create EKS Cluster
-  #       run: |
-  #         eksctl create cluster \
-  #           --name devops-test \
-  #           --version 1.33 \
-  #           --region ap-south-1 \
-  #           --nodes 2 \
-  #           --node-type t2.medium \
-  #           --with-oidc \
-  #           --managed
-
-  #     - name: Save kubeconfig
-  #       run: |
-  #         aws eks update-kubeconfig --region ap-south-1 --name devops-test
-  #         cat ~/.kube/config > kubeconfig.yaml
-
-  #     - name: Upload kubeconfig as artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: kubeconfig
-  #         path: kubeconfig.yaml
-
-  # deploy-app:
-  #   needs: create-eks
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
-
-  #     - name: Download kubeconfig
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: kubeconfig
-  #         path: .
-
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ap-south-1
-          
-  #     - name: Setup kubectl
-  #       run: |
-  #         mkdir -p ~/.kube
-  #         mv kubeconfig.yaml ~/.kube/config
-  #         chmod 600 ~/.kube/config
-
-  #     - name: Log in to DockerHub
-  #       uses: docker/login-action@v2
-  #       with:
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
-
-  #     - name: 'Download artifact from latest build'
-  #       uses: dawidd6/action-download-artifact@v6
-  #       with:
-  #         workflow: ci-cd-pipeline.yaml
-  #         name: rds-endpoint
-  #         path: rds-artifact
-  #         workflow_conclusion: success
-  #         branch: main
-      
-  #     - name: Show downloaded RDS Endpoint
-  #       run: |
-  #         cat rds-artifact/rds-endpoint.txt
-      
-  #     - name: Export RDS Endpoint to Environment
-  #       run: |
-  #         echo "RDS_ENDPOINT=$(cat rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
-      
-  #     - name: Replace RDS Endpoint in Backend ConfigMap
-  #       run: |
-  #         pwd 
-  #         ls -lrt
-  #         sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}/devops|g" \
-  #         kubernetesManifest/backend/backend-configmap.yaml
-  #         cat kubernetesManifest/backend/backend-configmap.yaml
-      
-  #     - name: Verify Replacement
-  #       run: |
-  #         grep "${RDS_ENDPOINT}" kubernetesManifest/backend/backend-configmap.yaml
-  
-  #     - name: Install Helm
-  #       run: |
-  #         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-  #         helm version
-
-  #     - name: Install NGINX Ingress Controller
-  #       run: |
-
-  #         helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-  #         helm repo update
-
-  #         helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-  #           --namespace ingress-nginx \
-  #           --create-namespace \
-  #           --set controller.allowSnippetAnnotations=true
-
-  #         kubectl get pods -n ingress-nginx
-
-  #     - name: Wait for Ingress Controller to be ready
-  #       run: |
-  #         echo "⏳ Waiting for ingress-nginx-controller pods..."
-  #         kubectl wait --namespace ingress-nginx \
-  #           --for=condition=Ready pods \
-  #           --selector=app.kubernetes.io/component=controller \
-  #           --timeout=600s
-  #         kubectl get pods -n ingress-nginx
-  #         echo "Sleeping 20s for webhook to be ready..."
-  #         sleep 20
-          
-  #     # ---- Apply manifests ----
-  #     - name: Apply Namespace
-  #       run: kubectl apply -f kubernetesManifest/namespace.yaml
-      
-  #     - name: Apply Backend
-  #       run: |
-  #         kubectl apply -f kubernetesManifest/backend/backend-configmap.yaml
-  #         kubectl apply -f kubernetesManifest/backend/backend-secret.yaml
-  #         kubectl apply -f kubernetesManifest/backend/backend-deployment.yaml
-  #         kubectl apply -f kubernetesManifest/backend/backend-service.yaml
-      
-  #     - name: Apply Frontend
-  #       run: |
-  #         kubectl apply -f kubernetesManifest/frontend/frontend-nginx-configmap.yaml
-  #         kubectl apply -f kubernetesManifest/frontend/frontend-deployment.yaml
-  #         kubectl apply -f kubernetesManifest/frontend/frontend-service.yaml
-  #         kubectl apply -f kubernetesManifest/frontend/frontend-ingress.yaml
-
-  #     # Wait until all pods are running
-  #     - name: Wait for Pods
-  #       run: |
-  #         echo "⏳ Waiting for pods to be ready..."
-  #         kubectl wait --for=condition=Available deployment --all -n devops --timeout=600s
-  #         kubectl get pods -n devops -o wide
-
-  #     # Show events if something is wrong
-  #     - name: Show Events
-  #       if: failure()
-  #       run: kubectl get events -n devops --sort-by=.metadata.creationTimestamp
-
-  #     # Tail logs from failing pods (last 10 lines)
-  #     - name: Get Pod Logs (10 lines)
-  #       run: |
-  #         for pod in $(kubectl get pods -n devops -o name); do
-  #           echo "🔹 Logs for $pod"
-  #           kubectl logs --tail=10 -n devops $pod || true
-  #         done
-
-  #     # Describe pods for debugging
-  #     - name: Describe Pods
-  #       run: kubectl describe pods -n devops
-
-  #     # Wait until ingress shows LoadBalancer hostname
-  #     - name: Wait for Ingress
-  #       run: |
-  #         echo "⏳ Waiting for ingress to get a LoadBalancer hostname..."
-  #         for i in {1..30}; do
-  #           HOSTNAME=$(kubectl get ingress -n devops -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
-  #           if [ -n "$HOSTNAME" ]; then
-  #             echo "✅ Ingress Hostname: $HOSTNAME"
-  #             echo "INGRESS_HOSTNAME=$HOSTNAME" >> $GITHUB_ENV
-  #             break
-  #           fi
-  #           echo "Waiting... ($i/30)"
-  #           sleep 20
-  #         done
-      
-  #     - name: Check pods
-  #       run: kubectl get pods -n devops
-
-  #     # 🔹 Fetch ingress hostname
-  #     - name: Get Ingress Hostname
-  #       run: |
-  #         kubectl get ingress -n devops -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
-  #         kubectl get ingress -n devops
-  #         echo ""
-
-  #     - name: Sleep for pods to stabilize
-  #       run: sleep 100   # 7 minutes
-  
-  # setup-monitoring:
-  #   needs: deploy-app
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v4
-  
-  #     - name: Download kubeconfig
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: kubeconfig
-  #         path: .
-  
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ap-south-1
-  
-  #     - name: Setup kubectl
-  #       run: |
-  #         mkdir -p ~/.kube
-  #         mv kubeconfig.yaml ~/.kube/config
-  #         chmod 600 ~/.kube/config
-  
-  #     - name: Install Prometheus and Grafana (optimized for small cluster)
-  #       run: |
-  #         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-  #         helm repo add grafana https://grafana.github.io/helm-charts
-  #         helm repo update
-  
-  #         helm upgrade --install prometheus prometheus-community/prometheus \
-  #           --namespace monitoring \
-  #           --create-namespace \
-  #           --set server.persistentVolume.enabled=false \
-  #           --set server.service.type=LoadBalancer \
-  #           --set prometheus-pushgateway.enabled=false \
-  #           --set alertmanager.enabled=false \
-  #           --set kubeStateMetrics.enabled=false \
-  #           --set nodeExporter.enabled=false \
-  #           --set server.resources.requests.cpu=100m \
-  #           --set server.resources.requests.memory=128Mi \
-  #           --set server.resources.limits.cpu=250m \
-  #           --set server.resources.limits.memory=256Mi 
-            
-  #         # Grafana
-  #         helm upgrade --install grafana grafana/grafana --namespace monitoring
-  
-  #     - name: Expose Prometheus and Grafana via LoadBalancer
-  #       run: |
-  #         kubectl patch svc prometheus-server -n monitoring -p '{"spec": {"type": "LoadBalancer"}}'
-  #         kubectl patch svc grafana -n monitoring -p '{"spec": {"type": "LoadBalancer"}}'
-  
-  #     - name: Get Grafana Admin Password
-  #       run: |
-  #         kubectl get secret grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
-  
-  #     - name: Sleep for pods to stabilize
-  #       run: sleep 180
-      
-  cleanup:
-    # needs: [deploy-app, create-eks, setup-monitoring]
+  create-eks:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    # if: ${{ needs.create-eks.result == 'success' }}
+    environment:
+      name: production 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 'Download artifact from latest build'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: ci-cd-pipeline.yaml
+          name: rds-endpoint
+          path: rds-artifact
+          workflow_conclusion: success
+          branch: main
+      
+      - name: Show downloaded RDS Endpoint
+        run: |
+          cat rds-artifact/rds-endpoint.txt
+      
+      - name: Export RDS Endpoint to Environment
+        run: |
+          echo "RDS_ENDPOINT=$(cat rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
+      
+      - name: Replace RDS Endpoint in Backend ConfigMap
+        run: |
+          pwd 
+          ls -lrt
+          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}/devops|g" \
+          kubernetesManifest/backend/backend-configmap.yaml
+          cat kubernetesManifest/backend/backend-configmap.yaml
+      
+      - name: Verify Replacement
+        run: |
+          grep "${RDS_ENDPOINT}" kubernetesManifest/backend/backend-configmap.yaml
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -319,11 +53,277 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      - name: Install eksctl
+      - name: Setup and deploy with eksctl
         run: |
-          curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/eksctl /usr/local/bin
-          eksctl version
+            curl -sSL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+              | tar xz && sudo mv eksctl /usr/local/bin/
+          
+            curl -sSLO "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/$(uname -s | tr '[:upper:]' '[:lower:]')/amd64/kubectl" \
+              && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
-      - name: Delete EKS cluster
-        run: eksctl delete cluster --region ap-south-1 --name devops-test
+            eksctl version
+            kubectl version --client
+
+      - name: Create EKS Cluster
+        run: |
+          eksctl create cluster \
+            --name devops-test \
+            --version 1.33 \
+            --region ap-south-1 \
+            --nodes 2 \
+            --node-type t2.medium \
+            --with-oidc \
+            --managed
+
+      - name: Save kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ap-south-1 --name devops-test
+          cat ~/.kube/config > kubeconfig.yaml
+
+      - name: Upload kubeconfig as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubeconfig
+          path: kubeconfig.yaml
+
+  deploy-app:
+    needs: create-eks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download kubeconfig
+        uses: actions/download-artifact@v4
+        with:
+          name: kubeconfig
+          path: .
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+          
+      - name: Setup kubectl
+        run: |
+          mkdir -p ~/.kube
+          mv kubeconfig.yaml ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 'Download artifact from latest build'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: ci-cd-pipeline.yaml
+          name: rds-endpoint
+          path: rds-artifact
+          workflow_conclusion: success
+          branch: main
+      
+      - name: Show downloaded RDS Endpoint
+        run: |
+          cat rds-artifact/rds-endpoint.txt
+      
+      - name: Export RDS Endpoint to Environment
+        run: |
+          echo "RDS_ENDPOINT=$(cat rds-artifact/rds-endpoint.txt)" >> $GITHUB_ENV
+      
+      - name: Replace RDS Endpoint in Backend ConfigMap
+        run: |
+          pwd 
+          ls -lrt
+          sed -i "s|jdbc:mysql://.*:3306/devops|jdbc:mysql://${RDS_ENDPOINT}/devops|g" \
+          kubernetesManifest/backend/backend-configmap.yaml
+          cat kubernetesManifest/backend/backend-configmap.yaml
+      
+      - name: Verify Replacement
+        run: |
+          grep "${RDS_ENDPOINT}" kubernetesManifest/backend/backend-configmap.yaml
+  
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+      - name: Install NGINX Ingress Controller
+        run: |
+
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+
+          helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+            --namespace ingress-nginx \
+            --create-namespace \
+            --set controller.allowSnippetAnnotations=true
+
+          kubectl get pods -n ingress-nginx
+
+      - name: Wait for Ingress Controller to be ready
+        run: |
+          echo "⏳ Waiting for ingress-nginx-controller pods..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=Ready pods \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=600s
+          kubectl get pods -n ingress-nginx
+          echo "Sleeping 20s for webhook to be ready..."
+          sleep 20
+          
+      # ---- Apply manifests ----
+      - name: Apply Namespace
+        run: kubectl apply -f kubernetesManifest/namespace.yaml
+      
+      - name: Apply Backend
+        run: |
+          kubectl apply -f kubernetesManifest/backend/backend-configmap.yaml
+          kubectl apply -f kubernetesManifest/backend/backend-secret.yaml
+          kubectl apply -f kubernetesManifest/backend/backend-deployment.yaml
+          kubectl apply -f kubernetesManifest/backend/backend-service.yaml
+      
+      - name: Apply Frontend
+        run: |
+          kubectl apply -f kubernetesManifest/frontend/frontend-nginx-configmap.yaml
+          kubectl apply -f kubernetesManifest/frontend/frontend-deployment.yaml
+          kubectl apply -f kubernetesManifest/frontend/frontend-service.yaml
+          kubectl apply -f kubernetesManifest/frontend/frontend-ingress.yaml
+
+      # Wait until all pods are running
+      - name: Wait for Pods
+        run: |
+          echo "⏳ Waiting for pods to be ready..."
+          kubectl wait --for=condition=Available deployment --all -n devops --timeout=600s
+          kubectl get pods -n devops -o wide
+
+      # Show events if something is wrong
+      - name: Show Events
+        if: failure()
+        run: kubectl get events -n devops --sort-by=.metadata.creationTimestamp
+
+      # Tail logs from failing pods (last 10 lines)
+      - name: Get Pod Logs (10 lines)
+        run: |
+          for pod in $(kubectl get pods -n devops -o name); do
+            echo "🔹 Logs for $pod"
+            kubectl logs --tail=10 -n devops $pod || true
+          done
+
+      # Describe pods for debugging
+      - name: Describe Pods
+        run: kubectl describe pods -n devops
+
+      # Wait until ingress shows LoadBalancer hostname
+      - name: Wait for Ingress
+        run: |
+          echo "⏳ Waiting for ingress to get a LoadBalancer hostname..."
+          for i in {1..30}; do
+            HOSTNAME=$(kubectl get ingress -n devops -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
+            if [ -n "$HOSTNAME" ]; then
+              echo "✅ Ingress Hostname: $HOSTNAME"
+              echo "INGRESS_HOSTNAME=$HOSTNAME" >> $GITHUB_ENV
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 20
+          done
+      
+      - name: Check pods
+        run: kubectl get pods -n devops
+
+      # 🔹 Fetch ingress hostname
+      - name: Get Ingress Hostname
+        run: |
+          kubectl get ingress -n devops -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
+          kubectl get ingress -n devops
+          echo ""
+
+      - name: Sleep for pods to stabilize
+        run: sleep 100   # 7 minutes
+  
+  setup-monitoring:
+    needs: deploy-app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+  
+      - name: Download kubeconfig
+        uses: actions/download-artifact@v4
+        with:
+          name: kubeconfig
+          path: .
+  
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+  
+      - name: Setup kubectl
+        run: |
+          mkdir -p ~/.kube
+          mv kubeconfig.yaml ~/.kube/config
+          chmod 600 ~/.kube/config
+  
+      - name: Install Prometheus and Grafana (optimized for small cluster)
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+  
+          helm upgrade --install prometheus prometheus-community/prometheus \
+            --namespace monitoring \
+            --create-namespace \
+            --set server.persistentVolume.enabled=false \
+            --set server.service.type=LoadBalancer \
+            --set prometheus-pushgateway.enabled=false \
+            --set alertmanager.enabled=false \
+            --set kubeStateMetrics.enabled=false \
+            --set nodeExporter.enabled=false \
+            --set server.resources.requests.cpu=100m \
+            --set server.resources.requests.memory=128Mi \
+            --set server.resources.limits.cpu=250m \
+            --set server.resources.limits.memory=256Mi 
+            
+          # Grafana
+          helm upgrade --install grafana grafana/grafana --namespace monitoring
+  
+      - name: Expose Prometheus and Grafana via LoadBalancer
+        run: |
+          kubectl patch svc prometheus-server -n monitoring -p '{"spec": {"type": "LoadBalancer"}}'
+          kubectl patch svc grafana -n monitoring -p '{"spec": {"type": "LoadBalancer"}}'
+  
+      - name: Get Grafana Admin Password
+        run: |
+          kubectl get secret grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
+  
+      - name: Sleep for pods to stabilize
+        run: sleep 180
+      
+  # cleanup:
+  #   needs: [deploy-app, create-eks, setup-monitoring]
+  #   runs-on: ubuntu-latest
+  #   if: ${{ needs.create-eks.result == 'success' }}
+  #   steps:
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ap-south-1
+
+  #     - name: Install eksctl
+  #       run: |
+  #         curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+  #         sudo mv /tmp/eksctl /usr/local/bin
+  #         eksctl version
+
+  #     - name: Delete EKS cluster
+  #       run: eksctl delete cluster --region ap-south-1 --name devops-test
