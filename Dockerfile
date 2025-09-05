@@ -5,7 +5,7 @@ RUN mkdir /app
 
 WORKDIR /app
 
-# Set environment variables for MySQL (replace with your desired values)
+# Set environment variables for MySQL (replace with your desired value)
 ENV MYSQL_ROOT_PASSWORD=raji123*
 ENV MYSQL_DATABASE=devops
 ENV MYSQL_USER=raji
