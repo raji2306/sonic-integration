@@ -2,9 +2,11 @@ name: Springboot-React CI/CD
 run-name: Hexaware-Sonic-Run
 
 on:
-  push:
+  pull_request:
     branches:
-      - master
+      - master        # base branch must be master
+    types:
+      - closed   
   workflow_dispatch:
 
 permissions: write-all
@@ -16,6 +18,7 @@ env:
 
 jobs:
   call-database-creation:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'feature/')
     name: Create RDS Database
     uses: ./.github/workflows/rds-setup.yaml
     secrets:
