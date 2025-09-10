@@ -1,4 +1,4 @@
-# Use the official MySQL image as the base image
+# Use the official MySQL image as the base images
 FROM mysql:8.0.34-debian
 
 RUN mkdir /app
