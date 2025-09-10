@@ -18,7 +18,7 @@ env:
 
 jobs:
   call-database-creation:
-    if: github.event.pull_request.merged == true # && startsWith(github.event.pull_request.head.ref, 'feature/')
+    # if: github.event.pull_request.merged == true # && startsWith(github.event.pull_request.head.ref, 'feature/')
     name: Create RDS Database
     uses: ./.github/workflows/rds-setup.yaml
     secrets:
