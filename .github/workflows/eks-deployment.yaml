@@ -303,7 +303,12 @@ jobs:
       - name: Get Grafana Admin Password
         run: |
           kubectl get secret grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
-  
+
+      - name: Print Prometheus and Grafana Endpoints
+        run: |
+          echo "🔹 Prometheus External Endpoint: $(kubectl get svc prometheus-server -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || kubectl get svc prometheus-server -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
+          echo "🔹 Grafana External Endpoint: $(kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
+
       - name: Sleep for pods to stabilize
         run: sleep 180
       
