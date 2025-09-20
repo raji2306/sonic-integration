@@ -1,3 +1,6 @@
+provider "aws" {
+  region = var.aws_region
+}
 
 # Default VPC
 data "aws_vpc" "default" {
@@ -33,12 +36,17 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
-# Default DB Subnet Group
-data "aws_db_subnet_group" "default" {
-  name = "default-subnet-group"
+# Create DB Subnet Group
+resource "aws_db_subnet_group" "default" {
+  name       = "default-subnet-group"
+  subnet_ids = data.aws_subnets.default.ids
+
+  tags = {
+    Name = "default-subnet-group"
+  }
 }
 
-# RDS Instance (static config except user-provided variables)
+# RDS Instance
 resource "aws_db_instance" "test" {
   identifier              = var.db_identifier
   db_name                 = var.db_name
@@ -52,7 +60,7 @@ resource "aws_db_instance" "test" {
   username                = var.db_username
   password                = var.db_password
 
-  db_subnet_group_name    = data.aws_db_subnet_group.default.name
+  db_subnet_group_name    = aws_db_subnet_group.default.name
   vpc_security_group_ids  = [aws_security_group.rds_sg.id]
   publicly_accessible     = true
 
