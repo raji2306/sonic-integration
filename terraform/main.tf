@@ -1,9 +1,13 @@
-# Get default VPC
+provider "aws" {
+  region = var.aws_region
+}
+
+# Default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
-# Get default subnets in the default VPC
+# Default subnets
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -11,7 +15,7 @@ data "aws_subnets" "default" {
   }
 }
 
-# Lookup existing security group (if already created manually)
+# Security Group (static, default)
 resource "aws_security_group" "rds_sg" {
   name        = "rds-public-sg"
   description = "Allow MySQL access"
@@ -32,16 +36,15 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
-
-# Lookup existing DB subnet group (if already exists in AWS)
+# Default DB Subnet Group
 data "aws_db_subnet_group" "default" {
   name = "default-subnet-group"
 }
 
-# RDS Instance
+# RDS Instance (static config except user-provided variables)
 resource "aws_db_instance" "test" {
-  identifier              = "devops"           # DB instance identifier
-  db_name                 = "devops"           # Initial database name
+  identifier              = var.db_identifier
+  db_name                 = var.db_name
   allocated_storage       = 20
   max_allocated_storage   = 20
   storage_type            = "gp2"
